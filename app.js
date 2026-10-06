@@ -6,9 +6,6 @@
 (function () {
   'use strict';
 
-  // --- Start Completely Empty (No Sample/Demo Data) ---
-  const DEFAULT_ITEMS = [];
-
   // --- Storage Helper with IndexedDB & localStorage Fallback ---
   const DB_NAME = 'pindrop_db';
   const DB_VERSION = 1;
@@ -18,81 +15,98 @@
 
   function initDB() {
     return new Promise((resolve) => {
-      if (!window.indexedDB) {
-        console.warn('IndexedDB not supported, falling back to localStorage.');
-        resolve(false);
-        return;
-      }
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-      request.onerror = () => {
-        console.error('IndexedDB error, falling back to localStorage.');
-        resolve(false);
-      };
-      request.onsuccess = (e) => {
-        db = e.target.result;
-        resolve(true);
-      };
-      request.onupgradeneeded = (e) => {
-        const database = e.target.result;
-        if (!database.objectStoreNames.contains(STORE_NAME)) {
-          database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      try {
+        if (!window.indexedDB) {
+          console.warn('IndexedDB not supported, falling back to localStorage.');
+          resolve(false);
+          return;
         }
-      };
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = () => {
+          console.error('IndexedDB error, falling back to localStorage.');
+          resolve(false);
+        };
+        request.onsuccess = (e) => {
+          db = e.target.result;
+          resolve(true);
+        };
+        request.onupgradeneeded = (e) => {
+          const database = e.target.result;
+          if (!database.objectStoreNames.contains(STORE_NAME)) {
+            database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        };
+      } catch (err) {
+        console.error('Failed to init IndexedDB:', err);
+        resolve(false);
+      }
     });
   }
 
   async function loadAllItems() {
     if (db) {
       return new Promise((resolve) => {
-        const transaction = db.transaction([STORE_NAME], 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const req = store.getAll();
-        req.onsuccess = () => {
-          if (req.result && req.result.length > 0) {
-            resolve(req.result);
-          } else {
-            const local = localStorage.getItem('pindrop_bookmarks');
-            if (local) {
-              try {
-                const parsed = JSON.parse(local);
-                saveAllItems(parsed);
-                resolve(parsed);
-                return;
-              } catch (e) {
-                console.error(e);
+        try {
+          const transaction = db.transaction([STORE_NAME], 'readonly');
+          const store = transaction.objectStore(STORE_NAME);
+          const req = store.getAll();
+          req.onsuccess = () => {
+            if (req.result && req.result.length > 0) {
+              resolve(req.result);
+            } else {
+              const local = localStorage.getItem('pindrop_bookmarks');
+              if (local) {
+                try {
+                  const parsed = JSON.parse(local);
+                  saveAllItems(parsed);
+                  resolve(parsed);
+                  return;
+                } catch (e) {
+                  console.error(e);
+                }
               }
+              resolve([]);
             }
-            resolve([]);
-          }
-        };
-        req.onerror = () => {
-          resolve([]);
-        };
+          };
+          req.onerror = () => {
+            resolve(loadFromLocalStorage());
+          };
+        } catch (e) {
+          resolve(loadFromLocalStorage());
+        }
       });
     } else {
-      const local = localStorage.getItem('pindrop_bookmarks');
-      if (local) {
-        try {
-          return JSON.parse(local);
-        } catch (e) {
-          return [];
-        }
-      }
-      return [];
+      return loadFromLocalStorage();
     }
+  }
+
+  function loadFromLocalStorage() {
+    const local = localStorage.getItem('pindrop_bookmarks');
+    if (local) {
+      try {
+        return JSON.parse(local);
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
   }
 
   async function saveAllItems(items) {
     if (db) {
-      const transaction = db.transaction([STORE_NAME], 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      store.clear();
-      items.forEach(item => store.put(item));
+      try {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        store.clear();
+        items.forEach(item => store.put(item));
+      } catch (err) {
+        console.warn('IndexedDB write warning:', err);
+      }
     }
     try {
       localStorage.setItem('pindrop_bookmarks', JSON.stringify(items));
     } catch (e) {
-      console.warn('localStorage full or quota exceeded, IndexedDB is primary.');
+      console.warn('localStorage full, relying on memory/IndexedDB.');
     }
   }
 
@@ -209,7 +223,7 @@
   function getFaviconUrl(url) {
     if (!url) return '';
     try {
-      const u = new URL(url);
+      const u = new URL(url.startsWith('http') ? url : 'https://' + url);
       return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=64`;
     } catch (e) {
       return '';
@@ -219,7 +233,7 @@
   function formatDomain(url) {
     if (!url) return '';
     try {
-      const u = new URL(url);
+      const u = new URL(url.startsWith('http') ? url : 'https://' + url);
       return u.hostname.replace(/^www\./, '');
     } catch (e) {
       return url;
@@ -228,7 +242,7 @@
 
   function escapeHtml(str) {
     if (!str) return '';
-    return str
+    return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -288,7 +302,6 @@
   }
 
   function renderSidebar() {
-    // Render counts
     const countAll = state.items.length;
     const countFavs = state.items.filter(i => i.favorite).length;
     const countLink = state.items.filter(i => i.type === 'link').length;
@@ -338,7 +351,7 @@
     tagsCloud.innerHTML = '';
     const sortedTags = Object.keys(tagCounts).sort();
     if (sortedTags.length === 0) {
-      tagsCloud.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); padding: 4px;">Keine Tags vorhanden</span>`;
+      tagsCloud.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); padding: 4px;">Keine Tags</span>`;
     } else {
       sortedTags.forEach(tag => {
         const chip = document.createElement('button');
@@ -652,25 +665,21 @@
       fieldImage.style.display = 'none';
       fieldCode.style.display = 'none';
       contentLabel.textContent = 'Optionale Beschreibung / Notiz';
-      itemUrlInput.required = true;
     } else if (type === 'image') {
       fieldLink.style.display = 'none';
       fieldImage.style.display = 'block';
       fieldCode.style.display = 'none';
       contentLabel.textContent = 'Bildunterschrift / Gedanken';
-      itemUrlInput.required = false;
     } else if (type === 'code') {
       fieldLink.style.display = 'none';
       fieldImage.style.display = 'none';
       fieldCode.style.display = 'block';
-      contentLabel.textContent = 'Code / Snippet *';
-      itemUrlInput.required = false;
+      contentLabel.textContent = 'Code / Snippet';
     } else if (type === 'note') {
       fieldLink.style.display = 'none';
       fieldImage.style.display = 'none';
       fieldCode.style.display = 'none';
-      contentLabel.textContent = 'Notiz / Markdown Inhalt *';
-      itemUrlInput.required = false;
+      contentLabel.textContent = 'Notiz / Markdown Inhalt';
     }
   }
 
@@ -785,12 +794,10 @@
   }
 
   // --- Auto Metadata / Title generator for Links ---
-  fetchMetadataBtn.addEventListener('click', () => {
+  function autofillMetadata() {
     let url = itemUrlInput.value.trim();
-    if (!url) {
-      showToast('Bitte zuerst eine URL eingeben', 'error');
-      return;
-    }
+    if (!url) return;
+
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       url = 'https://' + url;
       itemUrlInput.value = url;
@@ -812,10 +819,17 @@
           itemTagsInput.value = domainParts[0];
         }
       }
+    } catch (e) {}
+  }
 
-      showToast('Titel & Domain automatisch ausgefüllt! ✨', 'success');
-    } catch (e) {
-      showToast('Ungültige URL', 'error');
+  fetchMetadataBtn.addEventListener('click', () => {
+    autofillMetadata();
+    showToast('Titel & Domain automatisch ermittelt! ✨', 'success');
+  });
+
+  itemUrlInput.addEventListener('blur', () => {
+    if (itemUrlInput.value.trim() && !itemTitleInput.value.trim()) {
+      autofillMetadata();
     }
   });
 
@@ -835,7 +849,7 @@
       if (!itemTitleInput.value.trim()) {
         itemTitleInput.value = file.name.replace(/\.[^/.]+$/, '');
       }
-      showToast('Bild erfolgreich geladen!', 'success');
+      showToast('Bild geladen!', 'success');
     };
     reader.readAsDataURL(file);
   }
@@ -907,12 +921,13 @@
 
     const textData = e.dataTransfer.getData('text');
     if (textData) {
-      const isUrl = /^https?:\/\//i.test(textData.trim());
+      const isUrl = /^(https?:\/\/|[a-zA-Z0-9-]+\.[a-zA-Z]{2,})/i.test(textData.trim());
+      const cleanUrl = isUrl && !textData.startsWith('http') ? 'https://' + textData.trim() : textData.trim();
       const newItem = {
         id: 'item-' + Date.now(),
         type: isUrl ? 'link' : 'note',
-        title: isUrl ? formatDomain(textData) : 'Schnellnotiz ' + new Date().toLocaleTimeString('de-DE'),
-        url: isUrl ? textData.trim() : '',
+        title: isUrl ? formatDomain(cleanUrl) : 'Schnellnotiz ' + new Date().toLocaleTimeString('de-DE'),
+        url: isUrl ? cleanUrl : '',
         content: isUrl ? '' : textData,
         folder: 'Allgemein',
         tags: isUrl ? ['web'] : ['note'],
@@ -931,8 +946,8 @@
     e.preventDefault();
 
     const id = itemIdInput.value.trim();
-    const type = itemTypeInput.value;
-    const title = itemTitleInput.value.trim();
+    const type = itemTypeInput.value || 'link';
+    let title = itemTitleInput.value.trim();
     const content = itemContentInput.value.trim();
     const folder = itemFolderSelect.value || 'Allgemein';
     const favorite = itemFavoriteInput.checked;
@@ -949,11 +964,22 @@
       if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
         url = 'https://' + url;
       }
+      if (!title) {
+        title = url ? formatDomain(url) : 'Neuer Link';
+      }
     } else if (type === 'image') {
       url = imageUrlInput.value.trim();
+      if (!title) title = 'Bild ' + new Date().toLocaleDateString('de-DE');
     } else if (type === 'code') {
       codeLang = codeLanguageSelect.value;
+      if (!title) title = 'Code-Snippet (' + (codeLang || 'Text') + ')';
+    } else if (type === 'note') {
+      if (!title) {
+        title = content ? (content.slice(0, 30) + (content.length > 30 ? '...' : '')) : 'Notiz ' + new Date().toLocaleDateString('de-DE');
+      }
     }
+
+    if (!title) title = 'Unbenannter Eintrag';
 
     if (id) {
       const index = state.items.findIndex(i => i.id === id);
@@ -986,7 +1012,7 @@
         createdAt: Date.now()
       };
       state.items.unshift(newItem);
-      showToast('Neuer Eintrag gespeichert!', 'success');
+      showToast('Eintrag gespeichert!', 'success');
     }
 
     saveAllItems(state.items);

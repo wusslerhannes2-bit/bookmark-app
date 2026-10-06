@@ -264,9 +264,9 @@
 
         <!-- Dynamic URL Field for Links -->
         <div class="form-group field-link">
-          <label for="itemUrl">Web-Adresse (URL) *</label>
+          <label for="itemUrl">Web-Adresse (URL)</label>
           <div class="input-with-action">
-            <input type="url" id="itemUrl" placeholder="https://example.com" class="form-input">
+            <input type="text" id="itemUrl" placeholder="z. B. google.com oder https://github.com" class="form-input">
             <button type="button" class="btn btn-secondary btn-sm" id="fetchMetadataBtn" title="Titel & Icon automatisch abrufen">
               <span>Auto-Fill</span>
             </button>
@@ -283,7 +283,7 @@
               <input type="file" id="imageFileInput" accept="image/*" class="file-input-hidden">
             </div>
             <div class="or-separator">oder Bild-URL:</div>
-            <input type="url" id="imageUrlInput" placeholder="https://example.com/image.png" class="form-input">
+            <input type="text" id="imageUrlInput" placeholder="https://example.com/bild.png" class="form-input">
           </div>
           <div id="imagePreviewContainer" class="image-preview-box" style="display: none;">
             <img id="imagePreview" src="" alt="Vorschau">
@@ -293,8 +293,8 @@
 
         <!-- Title Field -->
         <div class="form-group">
-          <label for="itemTitle">Titel *</label>
-          <input type="text" id="itemTitle" placeholder="z. B. GitHub Dashboard, Dokumentation, Snippet..." class="form-input" required>
+          <label for="itemTitle">Titel (optional)</label>
+          <input type="text" id="itemTitle" placeholder="Wird bei Links automatisch ermittelt, falls leer" class="form-input">
         </div>
 
         <!-- Description / Note Body / Code Content -->
@@ -397,7 +397,7 @@
               Backup herunterladen (JSON)
             </button>
             <label class="btn btn-secondary cursor-pointer">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
               Backup einspielen (JSON)
               <input type="file" id="importJsonInput" accept=".json" style="display: none;">
             </label>
