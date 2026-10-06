@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PinDrop — Minimalist Bookmark & Snippet Space</title>
-  <meta name="description" content="Schnelle, private und übersichtliche Bookmark App für Links, Medien, Notizen und Code.">
+  <meta name="description" content="Private, verschlüsselte und schnelle Bookmark & Snippet App für Links, Medien, Notizen, Farben und Code.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#090a0f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -18,7 +20,7 @@
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
       <h2>PinDrop gesperrt</h2>
-      <p>Gib deine PIN ein, um auf deinen Workspace zuzugreifen.</p>
+      <p>Gib deine Master-PIN ein, um deinen privaten Speicher zu entsperren.</p>
       <form id="unlockForm">
         <input type="password" id="unlockPinInput" class="form-input lock-input" placeholder="••••" autofocus required maxlength="16">
         <button type="submit" class="btn btn-primary btn-block" style="margin-top: 14px;">Entsperren</button>
@@ -50,7 +52,6 @@
       </div>
 
       <nav class="sidebar-nav">
-        <!-- Main views -->
         <div class="nav-section">
           <div class="nav-section-title">Bibliothek</div>
           <ul class="nav-list">
@@ -71,9 +72,8 @@
           </ul>
         </div>
 
-        <!-- Filter by Type -->
         <div class="nav-section">
-          <div class="nav-section-title">Typen</div>
+          <div class="nav-section-title">Medientypen</div>
           <ul class="nav-list">
             <li class="nav-item" data-filter="type-link">
               <button class="nav-btn">
@@ -92,8 +92,15 @@
             <li class="nav-item" data-filter="type-note">
               <button class="nav-btn">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
-                <span>Notizen</span>
+                <span>Notizen & To-Dos</span>
                 <span class="count-badge" id="count-type-note">0</span>
+              </button>
+            </li>
+            <li class="nav-item" data-filter="type-color">
+              <button class="nav-btn">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
+                <span>Farben & Paletten</span>
+                <span class="count-badge" id="count-type-color">0</span>
               </button>
             </li>
             <li class="nav-item" data-filter="type-code">
@@ -106,7 +113,6 @@
           </ul>
         </div>
 
-        <!-- Folders -->
         <div class="nav-section">
           <div class="nav-section-title flex-between">
             <span>Ordner</span>
@@ -117,17 +123,15 @@
           <ul class="nav-list" id="foldersList"></ul>
         </div>
 
-        <!-- Tags -->
         <div class="nav-section">
           <div class="nav-section-title">Tags</div>
           <div class="tags-cloud" id="tagsCloud"></div>
         </div>
 
-        <!-- Trash / Papierkorb -->
         <div class="nav-section" style="margin-top: auto; padding-top: 10px;">
           <ul class="nav-list">
             <li class="nav-item" data-filter="trash">
-              <button class="nav-btn text-muted-hover">
+              <button class="nav-btn">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                 <span>Papierkorb</span>
                 <span class="count-badge" id="count-trash">0</span>
@@ -140,7 +144,7 @@
       <div class="sidebar-footer">
         <button class="nav-btn" id="openSettingsBtn">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span>Einstellungen</span>
+          <span>Einstellungen & Sync</span>
         </button>
         <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Hell/Dunkel Modus">
           <svg class="sun-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
@@ -151,7 +155,6 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <!-- Topbar -->
       <header class="topbar">
         <div class="topbar-left">
           <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" title="Menü">
@@ -167,7 +170,7 @@
         </div>
 
         <div class="topbar-right">
-          <!-- Multi-Select Bulk Actions Bar (hidden by default) -->
+          <!-- Multi-Select Bulk Actions -->
           <div class="bulk-actions" id="bulkActions" style="display: none;">
             <span class="bulk-count" id="bulkCount">0 gewählt</span>
             <button class="btn btn-secondary btn-sm" id="bulkFavBtn">Favorisieren</button>
@@ -201,7 +204,6 @@
         </div>
       </header>
 
-      <!-- Active Filter Banner -->
       <div class="filter-header" id="filterHeader">
         <div class="filter-title-wrap">
           <h1 class="filter-title" id="filterTitle">Alle Einträge</h1>
@@ -210,9 +212,7 @@
         <div class="filter-tags" id="activeFilterTags"></div>
       </div>
 
-      <!-- Bookmarks Grid / Container -->
       <div class="content-container">
-        <!-- Drop Overlay -->
         <div class="drop-overlay" id="dropOverlay">
           <div class="drop-overlay-box">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
@@ -221,10 +221,8 @@
           </div>
         </div>
 
-        <!-- Cards Container -->
         <div class="cards-grid view-grid" id="cardsGrid"></div>
 
-        <!-- Empty State -->
         <div class="empty-state" id="emptyState">
           <div class="empty-icon">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
@@ -250,8 +248,9 @@
 
       <div class="type-selector" id="typeSelector">
         <button type="button" class="type-tab-btn active" data-type="link">Link</button>
-        <button type="button" class="type-tab-btn" data-type="image">Bild / Screenshot</button>
-        <button type="button" class="type-tab-btn" data-type="note">Notiz</button>
+        <button type="button" class="type-tab-btn" data-type="image">Bild</button>
+        <button type="button" class="type-tab-btn" data-type="note">Notiz & To-Do</button>
+        <button type="button" class="type-tab-btn" data-type="color">Farbe</button>
         <button type="button" class="type-tab-btn" data-type="code">Code</button>
       </div>
 
@@ -286,16 +285,25 @@
           </div>
         </div>
 
+        <!-- Color Field -->
+        <div class="form-group field-color" style="display: none;">
+          <label for="itemColorInput">HEX-Farbwert / Color Picker</label>
+          <div class="input-with-action">
+            <input type="color" id="itemColorPicker" value="#6366f1" style="width: 44px; height: 38px; padding: 2px; border-radius: var(--radius-xs); cursor: pointer;">
+            <input type="text" id="itemColorInput" placeholder="#6366f1" class="form-input" style="font-family: var(--font-mono);">
+          </div>
+        </div>
+
         <!-- Title -->
         <div class="form-group">
-          <label for="itemTitle">Titel <span class="label-hint">(optional bei Links)</span></label>
+          <label for="itemTitle">Titel <span class="label-hint">(optional bei Links & Farben)</span></label>
           <input type="text" id="itemTitle" placeholder="Titel oder Name..." class="form-input">
         </div>
 
         <!-- Content / Note / Code -->
         <div class="form-group">
           <label for="itemContent" id="contentLabel">Beschreibung / Notiz</label>
-          <textarea id="itemContent" rows="4" placeholder="Gedanken, Notizen oder Code hier eingeben..." class="form-textarea"></textarea>
+          <textarea id="itemContent" rows="4" placeholder="Gedanken, Notizen, Checklisten (- [ ] To-Do) oder Code..." class="form-textarea"></textarea>
         </div>
 
         <!-- Code Language selector -->
@@ -355,7 +363,7 @@
     </div>
   </div>
 
-  <!-- MODAL: QR Code (Quick Mobile Share) -->
+  <!-- MODAL: QR Code -->
   <div class="modal-backdrop" id="qrModal">
     <div class="modal-card" style="max-width: 380px; text-align: center;">
       <div class="modal-header">
@@ -370,18 +378,18 @@
     </div>
   </div>
 
-  <!-- MODAL: Settings -->
+  <!-- MODAL: Settings & Cloud Sync -->
   <div class="modal-backdrop" id="settingsModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>Einstellungen</h2>
+        <h2>Einstellungen & Cloud-Sync</h2>
         <button class="icon-btn close-modal-btn" id="closeSettingsModalBtn">✕</button>
       </div>
       <div class="settings-content">
         <!-- Accent Color Theme Picker -->
         <div class="settings-group">
-          <h3>🎨 Akzentfarbe</h3>
-          <p class="settings-desc">Wähle deinen persönlichen Farb-Akzent für das Interface.</p>
+          <h3>🎨 Farbschema</h3>
+          <p class="settings-desc">Wähle deinen persönlichen Akzent für die Benutzeroberfläche.</p>
           <div class="accent-picker" id="accentPicker">
             <button class="accent-dot active" data-accent="indigo" style="background: #6366f1;" title="Indigo"></button>
             <button class="accent-dot" data-accent="emerald" style="background: #10b981;" title="Emerald"></button>
@@ -392,10 +400,28 @@
           </div>
         </div>
 
+        <!-- Encrypted GitHub Gist Cloud Sync -->
+        <div class="settings-group" style="background: var(--bg-input); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <h3>☁️ Ende-zu-Ende verschlüsselter Cloud-Sync (GitHub Gist)</h3>
+          <p class="settings-desc">Synchronisiere deine Lesezeichen privat zwischen Geräten. Alle Daten werden mit <strong>AES-256-GCM</strong> im Browser verschlüsselt, bevor sie in dein privates GitHub Gist hochgeladen werden.</p>
+          
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+            <input type="password" id="syncTokenInput" placeholder="GitHub Token (ghp_...)" class="form-input">
+            <input type="password" id="syncPasswordInput" placeholder="Verschlüsselungs-Passwort" class="form-input">
+            <input type="text" id="syncGistIdInput" placeholder="Gist ID (beim ersten Upload automatisch erstellt)" class="form-input">
+            
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+              <button class="btn btn-primary btn-sm" id="syncUploadBtn">In Cloud sichern (Verschlüsselt)</button>
+              <button class="btn btn-secondary btn-sm" id="syncDownloadBtn">Aus Cloud laden</button>
+            </div>
+            <span id="syncStatusMsg" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;"></span>
+          </div>
+        </div>
+
         <!-- PIN Protection -->
         <div class="settings-group">
-          <h3>🔒 PIN-Schutz</h3>
-          <p class="settings-desc">Sichere deine Bookmark App mit einer Master-PIN ab.</p>
+          <h3>🔒 Lokale PIN-Sperre</h3>
+          <p class="settings-desc">Sperrt PinDrop in diesem Browser ab.</p>
           <div class="settings-btn-row">
             <input type="password" id="setPinInput" placeholder="PIN festlegen..." class="form-input" style="max-width: 180px;">
             <button class="btn btn-secondary btn-sm" id="savePinBtn">PIN aktivieren</button>
@@ -406,26 +432,20 @@
 
         <!-- Backup & Export -->
         <div class="settings-group">
-          <h3>📦 Datensicherung & Export</h3>
-          <p class="settings-desc">Sichere alle deine Daten als JSON-Datei oder Markdown-Export.</p>
+          <h3>📦 Lokaler Datei-Export</h3>
+          <p class="settings-desc">Sichere alle deine Daten als JSON-Datei oder Markdown-Dokument.</p>
           <div class="settings-btn-row">
-            <button class="btn btn-secondary btn-sm" id="exportDataBtn">Exportieren (JSON)</button>
-            <button class="btn btn-secondary btn-sm" id="exportMarkdownBtn">Exportieren (Markdown)</button>
+            <button class="btn btn-secondary btn-sm" id="exportDataBtn">JSON Export</button>
+            <button class="btn btn-secondary btn-sm" id="exportMarkdownBtn">Markdown Export</button>
             <label class="btn btn-secondary btn-sm cursor-pointer">
-              Importieren (JSON)
+              JSON Import
               <input type="file" id="importJsonInput" accept=".json" style="display: none;">
             </label>
+            <label class="btn btn-secondary btn-sm cursor-pointer">
+              Browser-Bookmarks
+              <input type="file" id="importHtmlInput" accept=".html,.htm" style="display: none;">
+            </label>
           </div>
-        </div>
-
-        <!-- Browser Bookmarks Import -->
-        <div class="settings-group">
-          <h3>🌐 Browser-Lesezeichen</h3>
-          <p class="settings-desc">Importiere Lesezeichen (HTML) aus Chrome, Firefox, Safari oder Edge.</p>
-          <label class="btn btn-secondary btn-sm cursor-pointer" style="align-self: flex-start;">
-            HTML-Bookmarks importieren
-            <input type="file" id="importHtmlInput" accept=".html,.htm" style="display: none;">
-          </label>
         </div>
 
         <!-- Danger Zone -->

@@ -492,7 +492,6 @@ kbd {
   border: 1px solid var(--border-medium);
   padding: 3px 8px;
   border-radius: var(--radius-md);
-  animation: fade-in 0.2s ease;
 }
 
 .bulk-count {
@@ -679,6 +678,56 @@ kbd {
 .bookmark-card:hover .card-select-checkbox,
 .bookmark-card.selected .card-select-checkbox {
   opacity: 1;
+}
+
+/* Color Swatch Card */
+.card-color-swatch {
+  height: 90px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.color-hex-label {
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+/* Interactive Checklists / To-Dos */
+.todo-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.todo-checkbox {
+  margin-top: 3px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.todo-item.done span {
+  text-decoration: line-through;
+  color: var(--text-muted);
 }
 
 /* Card Visual Media */
@@ -886,6 +935,8 @@ kbd {
 
 .cards-grid.view-compact .card-media-wrapper,
 .cards-grid.view-compact .code-preview-box,
+.cards-grid.view-compact .card-color-swatch,
+.cards-grid.view-compact .todo-list-container,
 .cards-grid.view-compact .card-content-text {
   display: none;
 }
@@ -1028,7 +1079,7 @@ kbd {
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 520px;
+  max-width: 540px;
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
@@ -1058,6 +1109,7 @@ kbd {
   gap: 6px;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-sidebar);
+  overflow-x: auto;
 }
 
 .type-tab-btn {
@@ -1067,6 +1119,7 @@ kbd {
   font-weight: 600;
   color: var(--text-muted);
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .type-tab-btn.active {
@@ -1280,7 +1333,7 @@ kbd {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   overflow-y: auto;
 }
 
@@ -1291,7 +1344,7 @@ kbd {
 }
 
 .settings-group h3 {
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   font-weight: 700;
 }
 

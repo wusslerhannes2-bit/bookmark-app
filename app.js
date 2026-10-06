@@ -6,6 +6,11 @@
 (function () {
   'use strict';
 
+  // --- Register Service Worker for PWA Offline App ---
+  if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
   // --- Storage Engine (IndexedDB + localStorage Sync) ---
   const DB_NAME = 'pindrop_space_db';
   const DB_VERSION = 1;
@@ -92,7 +97,7 @@
   const state = {
     items: [],
     selectedIds: new Set(),
-    currentFilter: 'all', // 'all', 'favorites', 'type-link', 'type-image', 'type-note', 'type-code', 'folder:<name>', 'tag:<name>', 'trash'
+    currentFilter: 'all',
     searchQuery: '',
     currentSort: 'newest',
     currentView: 'grid',
@@ -147,6 +152,8 @@
   const imagePreviewContainer = document.getElementById('imagePreviewContainer');
   const imagePreview = document.getElementById('imagePreview');
   const removeImageBtn = document.getElementById('removeImageBtn');
+  const itemColorInput = document.getElementById('itemColorInput');
+  const itemColorPicker = document.getElementById('itemColorPicker');
   const itemTitleInput = document.getElementById('itemTitle');
   const itemContentInput = document.getElementById('itemContent');
   const codeLanguageSelect = document.getElementById('codeLanguage');
@@ -185,6 +192,91 @@
   const unlockForm = document.getElementById('unlockForm');
   const unlockPinInput = document.getElementById('unlockPinInput');
   const accentPicker = document.getElementById('accentPicker');
+
+  // Cloud Sync Elements
+  const syncTokenInput = document.getElementById('syncTokenInput');
+  const syncPasswordInput = document.getElementById('syncPasswordInput');
+  const syncGistIdInput = document.getElementById('syncGistIdInput');
+  const syncUploadBtn = document.getElementById('syncUploadBtn');
+  const syncDownloadBtn = document.getElementById('syncDownloadBtn');
+  const syncStatusMsg = document.getElementById('syncStatusMsg');
+
+  // --- Load saved cloud sync credentials ---
+  try {
+    const savedToken = localStorage.getItem('pindrop_sync_token');
+    const savedGistId = localStorage.getItem('pindrop_sync_gist_id');
+    if (savedToken && syncTokenInput) syncTokenInput.value = savedToken;
+    if (savedGistId && syncGistIdInput) syncGistIdInput.value = savedGistId;
+  } catch (e) {}
+
+  // --- Cryptography Helpers (AES-GCM 256 + PBKDF2) ---
+  async function deriveKey(password, salt) {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      enc.encode(password),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: salt,
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  async function encryptData(plainText, password) {
+    const enc = new TextEncoder();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await deriveKey(password, salt);
+    const encryptedContent = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      enc.encode(plainText)
+    );
+
+    function bufferToBase64(buf) {
+      return btoa(String.fromCharCode(...new Uint8Array(buf)));
+    }
+
+    return JSON.stringify({
+      salt: bufferToBase64(salt),
+      iv: bufferToBase64(iv),
+      data: bufferToBase64(encryptedContent)
+    });
+  }
+
+  async function decryptData(encryptedJsonStr, password) {
+    function base64ToBuffer(b64) {
+      const bin = atob(b64);
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return arr.buffer;
+    }
+
+    const parsed = JSON.parse(encryptedJsonStr);
+    const salt = base64ToBuffer(parsed.salt);
+    const iv = base64ToBuffer(parsed.iv);
+    const encryptedData = base64ToBuffer(parsed.data);
+
+    const key = await deriveKey(password, salt);
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      encryptedData
+    );
+    const dec = new TextDecoder();
+    return dec.decode(decrypted);
+  }
 
   // --- Utilities ---
   function getFaviconUrl(url) {
@@ -244,7 +336,30 @@
     });
   }
 
-  // --- Theme & Accent Management ---
+  // --- Smart Categorization Rules ---
+  function applySmartRules(url) {
+    if (!url) return { folder: null, tags: [] };
+    const lower = url.toLowerCase();
+
+    if (lower.includes('github.com') || lower.includes('gitlab.com')) {
+      return { folder: 'Development', tags: ['git', 'dev'] };
+    }
+    if (lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('vimeo.com')) {
+      return { folder: 'Medien', tags: ['video'] };
+    }
+    if (lower.includes('figma.com') || lower.includes('dribbble.com') || lower.includes('behance.net')) {
+      return { folder: 'Design', tags: ['design', 'ui'] };
+    }
+    if (lower.includes('medium.com') || lower.includes('dev.to') || lower.includes('substack.com')) {
+      return { folder: 'Leseliste', tags: ['article', 'reading'] };
+    }
+    if (lower.includes('stackoverflow.com') || lower.includes('developer.mozilla.org')) {
+      return { folder: 'Development', tags: ['docs', 'coding'] };
+    }
+    return { folder: null, tags: [] };
+  }
+
+  // --- Theme & Accent ---
   function initThemes() {
     const savedTheme = localStorage.getItem('pindrop_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
@@ -305,17 +420,12 @@
     }
   }
 
-  // --- QR Code Generator (Zero Dependency SVG) ---
-  function generateQrSvg(text) {
-    // Generates a crisp QR code SVG via quick encoded API or fallback QR matrix
-    const encoded = encodeURIComponent(text);
-    return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encoded}&margin=0" alt="QR Code" style="width: 180px; height: 180px; display: block;" />`;
-  }
-
+  // --- QR Code ---
   function openQrModal(url) {
     if (!url) return;
     const cleanUrl = url.startsWith('http') ? url : 'https://' + url;
-    qrCodeContainer.innerHTML = generateQrSvg(cleanUrl);
+    const encoded = encodeURIComponent(cleanUrl);
+    qrCodeContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encoded}&margin=0" alt="QR Code" style="width:180px; height:180px; display:block;" />`;
     qrUrlText.textContent = cleanUrl;
     copyQrUrlBtn.onclick = () => copyToClipboard(cleanUrl, 'Link');
     qrModal.classList.add('open');
@@ -341,6 +451,7 @@
     document.getElementById('count-type-link').textContent = activeItems.filter(i => i.type === 'link').length;
     document.getElementById('count-type-image').textContent = activeItems.filter(i => i.type === 'image').length;
     document.getElementById('count-type-note').textContent = activeItems.filter(i => i.type === 'note').length;
+    document.getElementById('count-type-color').textContent = activeItems.filter(i => i.type === 'color').length;
     document.getElementById('count-type-code').textContent = activeItems.filter(i => i.type === 'code').length;
     document.getElementById('count-trash').textContent = trashedItems.length;
 
@@ -388,7 +499,6 @@
     updateFolderSelect();
   }
 
-  // --- Filtering & Sorting ---
   function setFilter(filter) {
     state.currentFilter = filter;
     state.selectedIds.clear();
@@ -404,7 +514,6 @@
   function getFilteredItems() {
     let result = [...state.items];
 
-    // Trash filter vs normal items
     if (state.currentFilter === 'trash') {
       result = result.filter(i => i.trashed);
     } else {
@@ -424,7 +533,6 @@
       }
     }
 
-    // Smart search
     if (state.searchQuery.trim()) {
       const q = state.searchQuery.toLowerCase().trim();
       result = result.filter(i => {
@@ -437,7 +545,6 @@
       });
     }
 
-    // Sorting
     if (state.currentSort === 'newest') {
       result.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     } else if (state.currentSort === 'oldest') {
@@ -459,7 +566,8 @@
     else if (state.currentFilter === 'favorites') title = '❤️ Favoriten';
     else if (state.currentFilter === 'type-link') title = '🔗 Links';
     else if (state.currentFilter === 'type-image') title = '🖼️ Bilder';
-    else if (state.currentFilter === 'type-note') title = '📝 Notizen';
+    else if (state.currentFilter === 'type-note') title = '📝 Notizen & To-Dos';
+    else if (state.currentFilter === 'type-color') title = '🎨 Farben';
     else if (state.currentFilter === 'type-code') title = '💻 Code-Snippets';
     else if (state.currentFilter.startsWith('folder:')) title = `📁 ${state.currentFilter.replace('folder:', '')}`;
     else if (state.currentFilter.startsWith('tag:')) title = `#${state.currentFilter.replace('tag:', '')}`;
@@ -489,6 +597,36 @@
     }
   }
 
+  // --- Render Checklist helper ---
+  function renderChecklistHtml(content, itemId) {
+    if (!content) return '';
+    const lines = content.split('\n');
+    const hasCheckboxes = lines.some(l => /^\s*-\s*\[([ xX])\]/.test(l));
+
+    if (!hasCheckboxes) {
+      return `<div class="card-content-text" data-action="view-detail">${escapeHtml(content)}</div>`;
+    }
+
+    let html = '<div class="todo-list-container">';
+    lines.forEach((line, idx) => {
+      const match = line.match(/^\s*-\s*\[([ xX])\]\s*(.*)$/);
+      if (match) {
+        const isChecked = match[1].toLowerCase() === 'x';
+        const taskText = match[2];
+        html += `
+          <label class="todo-item ${isChecked ? 'done' : ''}" data-item-id="${itemId}" data-line-idx="${idx}">
+            <input type="checkbox" class="todo-checkbox" ${isChecked ? 'checked' : ''}>
+            <span>${escapeHtml(taskText)}</span>
+          </label>
+        `;
+      } else if (line.trim()) {
+        html += `<div style="font-size:0.8rem; color:var(--text-secondary);">${escapeHtml(line)}</div>`;
+      }
+    });
+    html += '</div>';
+    return html;
+  }
+
   // --- Render Bookmarks ---
   function renderItems() {
     const filtered = getFilteredItems();
@@ -501,13 +639,13 @@
       emptyState.style.display = 'flex';
       if (state.currentFilter === 'trash') {
         emptyTitle.textContent = 'Papierkorb ist leer';
-        emptyDesc.textContent = 'Gelöschte Lesezeichen landen hier und können wiederhergestellt werden.';
+        emptyDesc.textContent = 'Gelöschte Einträge landen hier und können wiederhergestellt werden.';
       } else if (state.searchQuery) {
         emptyTitle.textContent = `Keine Treffer für "${state.searchQuery}"`;
-        emptyDesc.textContent = 'Versuche einen anderen Suchbegriff oder entferne den Filter.';
+        emptyDesc.textContent = 'Versuche einen anderen Suchbegriff.';
       } else {
         emptyTitle.textContent = 'Keine Einträge vorhanden';
-        emptyDesc.textContent = 'Klicke auf "Neuer Eintrag" oder drücke N, um loszulegen.';
+        emptyDesc.textContent = 'Klicke auf "Neuer Eintrag" oder drücke N, um zu starten.';
       }
       return;
     }
@@ -536,6 +674,16 @@
       `;
     }
 
+    // Color Swatch section
+    let colorHtml = '';
+    if (item.type === 'color' && item.url) {
+      colorHtml = `
+        <div class="card-color-swatch" style="background: ${escapeHtml(item.url)};" data-action="copy-color" data-color="${escapeHtml(item.url)}">
+          <span class="color-hex-label">${escapeHtml(item.url)} (Kopieren)</span>
+        </div>
+      `;
+    }
+
     // Code section
     let codeHtml = '';
     if (item.type === 'code' && item.content) {
@@ -558,13 +706,14 @@
       `;
     } else if (item.type === 'note') {
       faviconHtml = `<div class="favicon-box" style="color:var(--success);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg></div>`;
+    } else if (item.type === 'color') {
+      faviconHtml = `<div class="favicon-box" style="background:${escapeHtml(item.url || 'var(--accent)')};"></div>`;
     } else if (item.type === 'code') {
       faviconHtml = `<div class="favicon-box" style="color:#38bdf8;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>`;
     } else if (item.type === 'image') {
       faviconHtml = `<div class="favicon-box" style="color:var(--favorite);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/></svg></div>`;
     }
 
-    // Tags
     let tagsHtml = '';
     if (item.tags && item.tags.length > 0) {
       tagsHtml = `
@@ -574,13 +723,13 @@
       `;
     }
 
-    // Text content preview
     let contentHtml = '';
-    if (item.type !== 'code' && item.content) {
+    if (item.type === 'note') {
+      contentHtml = renderChecklistHtml(item.content, item.id);
+    } else if (item.type !== 'code' && item.type !== 'color' && item.content) {
       contentHtml = `<div class="card-content-text" data-action="view-detail">${escapeHtml(item.content)}</div>`;
     }
 
-    // Actions & Buttons
     let actionsFooter = '';
     if (item.trashed) {
       actionsFooter = `
@@ -618,7 +767,7 @@
           <button class="card-btn" data-action="edit" title="Bearbeiten">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
           </button>
-          <button class="card-btn text-danger" data-action="soft-delete" title="In Papierkorb verschieben">
+          <button class="card-btn text-danger" data-action="soft-delete" title="In Papierkorb">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           </button>
         </div>
@@ -628,6 +777,7 @@
     card.innerHTML = `
       <input type="checkbox" class="card-select-checkbox" data-action="select-item" ${isSelected ? 'checked' : ''}>
       ${mediaHtml}
+      ${colorHtml}
       <div class="card-body">
         <div class="card-top">
           <div class="card-icon-title">
@@ -651,8 +801,25 @@
       </div>
     `;
 
-    // Card Click Actions
+    // Click delegation
     card.addEventListener('click', (e) => {
+      // Checkbox Toggle in To-Do Notes
+      const todoCheckbox = e.target.closest('.todo-checkbox');
+      if (todoCheckbox) {
+        const todoLabel = todoCheckbox.closest('.todo-item');
+        const lineIdx = parseInt(todoLabel.getAttribute('data-line-idx'), 10);
+        const isChecked = todoCheckbox.checked;
+
+        const lines = (item.content || '').split('\n');
+        if (lines[lineIdx]) {
+          lines[lineIdx] = lines[lineIdx].replace(/^(\s*-\s*\[)([ xX])(\])/, `$1${isChecked ? 'x' : ' '}$3`);
+          item.content = lines.join('\n');
+          saveAllItems(state.items);
+          todoLabel.classList.toggle('done', isChecked);
+        }
+        return;
+      }
+
       const target = e.target.closest('[data-action], [data-tag]');
       if (!target) return;
 
@@ -669,6 +836,8 @@
         else state.selectedIds.add(item.id);
         card.classList.toggle('selected', state.selectedIds.has(item.id));
         updateBulkActionsUI();
+      } else if (action === 'copy-color') {
+        copyToClipboard(item.url, 'Farbcode');
       } else if (action === 'toggle-fav') {
         item.favorite = !item.favorite;
         saveAllItems(state.items);
@@ -690,7 +859,7 @@
         item.trashed = false;
         saveAllItems(state.items);
         renderItems();
-        showToast('Eintrag wiederhergestellt!', 'success');
+        showToast('Wiederhergestellt!', 'success');
       } else if (action === 'delete-forever') {
         if (confirm(`Eintrag "${item.title}" endgültig löschen?`)) {
           state.items = state.items.filter(i => i.id !== item.id);
@@ -737,7 +906,7 @@
     document.querySelectorAll('.bookmark-card').forEach(c => c.classList.remove('selected'));
   });
 
-  // --- Modal (Add / Edit) ---
+  // --- Modal Logic ---
   function setModalType(type) {
     state.activeTypeInModal = type;
     itemTypeInput.value = type;
@@ -748,8 +917,30 @@
 
     document.querySelector('.field-link').style.display = type === 'link' ? 'block' : 'none';
     document.querySelector('.field-image').style.display = type === 'image' ? 'block' : 'none';
+    document.querySelector('.field-color').style.display = type === 'color' ? 'block' : 'none';
     document.querySelector('.field-code').style.display = type === 'code' ? 'block' : 'none';
-    document.getElementById('contentLabel').textContent = type === 'code' ? 'Code-Inhalt' : (type === 'note' ? 'Notiz / Markdown' : 'Optionale Beschreibung');
+
+    if (type === 'color') {
+      document.getElementById('contentLabel').textContent = 'Farbnotiz / Verwendung';
+    } else if (type === 'code') {
+      document.getElementById('contentLabel').textContent = 'Code-Inhalt';
+    } else if (type === 'note') {
+      document.getElementById('contentLabel').textContent = 'Notiz (z. B. - [ ] Aufgabe für To-Dos)';
+    } else {
+      document.getElementById('contentLabel').textContent = 'Optionale Beschreibung';
+    }
+  }
+
+  // Color picker sync
+  if (itemColorPicker && itemColorInput) {
+    itemColorPicker.addEventListener('input', (e) => {
+      itemColorInput.value = e.target.value;
+    });
+    itemColorInput.addEventListener('input', (e) => {
+      if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+        itemColorPicker.value = e.target.value;
+      }
+    });
   }
 
   function openNewItemModal() {
@@ -787,6 +978,9 @@
         imagePreview.src = item.url;
         imagePreviewContainer.style.display = 'block';
       }
+    } else if (item.type === 'color') {
+      itemColorInput.value = item.url || '#6366f1';
+      itemColorPicker.value = item.url || '#6366f1';
     } else if (item.type === 'code') {
       codeLanguageSelect.value = item.codeLang || 'javascript';
     }
@@ -815,6 +1009,14 @@
       bodyContent += `<img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.title)}" class="detail-img">`;
     }
 
+    if (item.type === 'color' && item.url) {
+      bodyContent += `
+        <div style="height:120px; border-radius:var(--radius-md); background:${escapeHtml(item.url)}; display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--font-mono); font-weight:700; font-size:1.2rem;">
+          ${escapeHtml(item.url)}
+        </div>
+      `;
+    }
+
     if (item.type === 'code' && item.content) {
       bodyContent += `
         <div class="detail-code-block">
@@ -841,7 +1043,7 @@
       <button class="btn btn-secondary btn-sm" id="detailCopyBtn">Kopieren</button>
       <div style="display:flex; gap:6px;">
         <button class="btn btn-secondary btn-sm" id="detailEditBtn">Bearbeiten</button>
-        ${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Öffnen</a>` : ''}
+        ${item.url && item.type === 'link' ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Öffnen</a>` : ''}
       </div>
     `;
 
@@ -854,7 +1056,7 @@
     detailModal.classList.add('open');
   }
 
-  // --- Auto Title / Meta ---
+  // --- Auto Title & Smart Rules ---
   function autofillMetadata() {
     let url = itemUrlInput.value.trim();
     if (!url) return;
@@ -874,7 +1076,18 @@
         itemTitleInput.value = titlePart;
       }
 
-      if (!itemTagsInput.value.trim()) {
+      // Smart Rules
+      const rules = applySmartRules(url);
+      if (rules.folder && !itemFolderSelect.value) {
+        if (!state.customFolders.includes(rules.folder)) {
+          state.customFolders.push(rules.folder);
+          updateFolderSelect();
+        }
+        itemFolderSelect.value = rules.folder;
+      }
+      if (rules.tags.length > 0 && !itemTagsInput.value.trim()) {
+        itemTagsInput.value = rules.tags.join(', ');
+      } else if (!itemTagsInput.value.trim()) {
         const domainParts = host.split('.');
         if (domainParts[0] && domainParts[0] !== 'com') itemTagsInput.value = domainParts[0];
       }
@@ -883,7 +1096,7 @@
 
   fetchMetadataBtn.addEventListener('click', () => {
     autofillMetadata();
-    showToast('Titel & Domain ermittelt! ✨', 'success');
+    showToast('Titel & Smart-Rules angewandt! ✨', 'success');
   });
 
   itemUrlInput.addEventListener('blur', () => {
@@ -971,14 +1184,16 @@
     if (textData) {
       const isUrl = /^(https?:\/\/|[a-zA-Z0-9-]+\.[a-zA-Z]{2,})/i.test(textData.trim());
       const cleanUrl = isUrl && !textData.startsWith('http') ? 'https://' + textData.trim() : textData.trim();
+      const rules = isUrl ? applySmartRules(cleanUrl) : { folder: 'Allgemein', tags: ['note'] };
+
       const newItem = {
         id: 'item-' + Date.now(),
         type: isUrl ? 'link' : 'note',
         title: isUrl ? formatDomain(cleanUrl) : 'Schnellnotiz ' + new Date().toLocaleTimeString('de-DE'),
         url: isUrl ? cleanUrl : '',
         content: isUrl ? '' : textData,
-        folder: 'Allgemein',
-        tags: isUrl ? ['web'] : ['note'],
+        folder: rules.folder || 'Allgemein',
+        tags: rules.tags || [],
         favorite: false,
         createdAt: Date.now()
       };
@@ -1016,6 +1231,9 @@
     } else if (type === 'image') {
       url = imageUrlInput.value.trim();
       if (!title) title = 'Bild ' + new Date().toLocaleDateString('de-DE');
+    } else if (type === 'color') {
+      url = itemColorInput.value.trim() || '#6366f1';
+      if (!title) title = url;
     } else if (type === 'code') {
       codeLang = codeLanguageSelect.value;
       if (!title) title = 'Snippet (' + (codeLang || 'Text') + ')';
@@ -1040,6 +1258,126 @@
     saveAllItems(state.items);
     closeModals();
     renderItems();
+  });
+
+  // --- Encrypted Cloud Sync (GitHub Gist API) ---
+  syncUploadBtn.addEventListener('click', async () => {
+    const token = syncTokenInput.value.trim();
+    const password = syncPasswordInput.value.trim();
+    let gistId = syncGistIdInput.value.trim();
+
+    if (!token || !password) {
+      showToast('Token und Passwort erforderlich!', 'error');
+      return;
+    }
+
+    syncStatusMsg.textContent = 'Verschlüssele und lade hoch...';
+    try {
+      localStorage.setItem('pindrop_sync_token', token);
+
+      const payload = JSON.stringify({
+        version: '2.0',
+        exportedAt: new Date().toISOString(),
+        folders: state.customFolders,
+        items: state.items
+      });
+
+      // Encrypt with AES-GCM 256
+      const encryptedBlob = await encryptData(payload, password);
+
+      const requestBody = {
+        description: 'PinDrop Private Encrypted Bookmark Sync',
+        public: false,
+        files: {
+          'pindrop_encrypted_sync.json': {
+            content: encryptedBlob
+          }
+        }
+      };
+
+      let res;
+      if (gistId) {
+        res = await fetch(`https://api.github.com/gists/${gistId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+      } else {
+        res = await fetch('https://api.github.com/gists', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+      }
+
+      if (!res.ok) throw new Error(`GitHub API Fehler (${res.status})`);
+      const gistData = await res.json();
+      syncGistIdInput.value = gistData.id;
+      localStorage.setItem('pindrop_sync_gist_id', gistData.id);
+
+      syncStatusMsg.textContent = `✓ Erfolgreich verschlüsselt gesichert (${new Date().toLocaleTimeString('de-DE')})`;
+      syncStatusMsg.style.color = 'var(--success)';
+      showToast('Verschlüsselter Sync erfolgreich! 🔒', 'success');
+    } catch (err) {
+      syncStatusMsg.textContent = `Fehler: ${err.message}`;
+      syncStatusMsg.style.color = 'var(--danger)';
+      showToast('Sync fehlgeschlagen', 'error');
+    }
+  });
+
+  syncDownloadBtn.addEventListener('click', async () => {
+    const token = syncTokenInput.value.trim();
+    const password = syncPasswordInput.value.trim();
+    const gistId = syncGistIdInput.value.trim();
+
+    if (!token || !password || !gistId) {
+      showToast('Token, Passwort und Gist-ID erforderlich!', 'error');
+      return;
+    }
+
+    syncStatusMsg.textContent = 'Lade aus Cloud und entschlüssele...';
+    try {
+      const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+
+      if (!res.ok) throw new Error(`Gist nicht gefunden (${res.status})`);
+      const gistData = await res.json();
+      const file = gistData.files['pindrop_encrypted_sync.json'];
+      if (!file || !file.content) throw new Error('Keine PinDrop-Sync-Datei im Gist gefunden');
+
+      // Decrypt AES-GCM 256
+      const decryptedJsonStr = await decryptData(file.content, password);
+      const data = JSON.parse(decryptedJsonStr);
+
+      if (data.items && Array.isArray(data.items)) {
+        state.items = data.items;
+        if (data.folders) {
+          state.customFolders = Array.from(new Set([...state.customFolders, ...data.folders]));
+          localStorage.setItem('pindrop_folders', JSON.stringify(state.customFolders));
+        }
+        saveAllItems(state.items);
+        renderItems();
+        syncStatusMsg.textContent = `✓ ${state.items.length} Einträge synchronisiert`;
+        syncStatusMsg.style.color = 'var(--success)';
+        showToast('Erfolgreich aus Cloud wiederhergestellt! 🔓', 'success');
+      }
+    } catch (err) {
+      syncStatusMsg.textContent = `Entschlüsselung fehlgeschlagen (Falsches Passwort?)`;
+      syncStatusMsg.style.color = 'var(--danger)';
+      showToast('Entschlüsselung fehlgeschlagen', 'error');
+    }
   });
 
   // --- PIN / Password Security ---
@@ -1102,6 +1440,7 @@
         md += `## 📁 ${folder}\n\n`;
         folderItems.forEach(i => {
           if (i.type === 'link') md += `- [${i.title}](${i.url}) ${i.tags && i.tags.length ? `*(#${i.tags.join(' #')})*` : ''}\n`;
+          else if (i.type === 'color') md += `- **Farbe ${i.title}**: \`${i.url}\`\n`;
           else if (i.type === 'note') md += `### 📝 ${i.title}\n${i.content}\n\n`;
           else if (i.type === 'code') md += `### 💻 ${i.title}\n\`\`\`${i.codeLang || ''}\n${i.content}\n\`\`\`\n\n`;
           else if (i.type === 'image') md += `- **${i.title}**: ![Image](${i.url})\n`;
@@ -1117,7 +1456,7 @@
     a.download = `pindrop-bookmarks-${new Date().toISOString().slice(0, 10)}.md`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Markdown-Datei exportiert!', 'success');
+    showToast('Markdown exportiert!', 'success');
   });
 
   importJsonInput.addEventListener('change', (e) => {
