@@ -3,14 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PinDrop — Clean Bookmarks & Snippets</title>
-  <meta name="description" content="Einfache, moderne und übersichtliche Bookmark & Snippet App für Links, Bilder, Texte und Notizen.">
+  <title>PinDrop — Clean Bookmarks</title>
+  <meta name="description" content="Einfache, moderne und private Bookmark App für Links, Bilder, Texte und Notizen.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- PIN / Lock Screen Overlay (if PIN is configured) -->
+  <div class="lock-screen-overlay" id="lockScreen" style="display: none;">
+    <div class="lock-card">
+      <div class="lock-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h2>PinDrop gesperrt</h2>
+      <p id="lockScreenDesc">Gib deine PIN oder dein Passwort ein, um deine Lesezeichen zu öffnen.</p>
+      <form id="unlockForm">
+        <input type="password" id="unlockPinInput" class="form-input lock-input" placeholder="PIN / Passwort" autofocus required>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 12px;">Entsperren</button>
+      </form>
+    </div>
+  </div>
+
   <div id="app" class="app-layout">
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
@@ -77,7 +92,7 @@
             </li>
             <li class="nav-item" data-filter="type-note">
               <button class="nav-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
                 <span>Texte & Notizen</span>
                 <span class="count-badge" id="count-type-note">0</span>
               </button>
@@ -115,7 +130,7 @@
       <div class="sidebar-footer">
         <button class="nav-btn" id="openSettingsBtn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span>Backup & Einstellungen</span>
+          <span>Einstellungen</span>
         </button>
         <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Hell/Dunkel umschalten">
           <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
@@ -135,7 +150,7 @@
           
           <div class="search-container">
             <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="searchInput" class="search-input" placeholder="Suchen nach Titel, Link, Text oder Tag... (Strg + K)">
+            <input type="text" id="searchInput" class="search-input" placeholder="Suchen nach Link, Titel, Text oder Tag... (Strg + K)">
             <kbd class="kbd-badge" id="searchKbd">⌘K</kbd>
             <button class="clear-search-btn" id="clearSearchBtn" title="Suche löschen" style="display: none;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -198,11 +213,11 @@
         </div>
 
         <!-- Empty State -->
-        <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-state" id="emptyState">
           <div class="empty-icon">
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
           </div>
-          <h3 id="emptyTitle">Keine Einträge vorhanden</h3>
+          <h3 id="emptyTitle">Noch keine Lesezeichen vorhanden</h3>
           <p id="emptyDesc">Klicke auf "Neuer Eintrag" oder drücke <kbd>N</kbd>, um dein erstes Lesezeichen hinzuzufügen.</p>
           <button class="btn btn-primary" id="emptyAddBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -268,7 +283,7 @@
               <input type="file" id="imageFileInput" accept="image/*" class="file-input-hidden">
             </div>
             <div class="or-separator">oder Bild-URL:</div>
-            <input type="url" id="imageUrlInput" placeholder="https://images.unsplash.com/photo-..." class="form-input">
+            <input type="url" id="imageUrlInput" placeholder="https://example.com/image.png" class="form-input">
           </div>
           <div id="imagePreviewContainer" class="image-preview-box" style="display: none;">
             <img id="imagePreview" src="" alt="Vorschau">
@@ -279,13 +294,13 @@
         <!-- Title Field -->
         <div class="form-group">
           <label for="itemTitle">Titel *</label>
-          <input type="text" id="itemTitle" placeholder="z. B. GitHub Dashboard, Figma Inspiration, Code Cheatsheet..." class="form-input" required>
+          <input type="text" id="itemTitle" placeholder="z. B. GitHub Dashboard, Dokumentation, Snippet..." class="form-input" required>
         </div>
 
         <!-- Description / Note Body / Code Content -->
         <div class="form-group">
           <label for="itemContent" id="contentLabel">Beschreibung / Notiz</label>
-          <textarea id="itemContent" rows="4" placeholder="Zusätzliche Notizen, Markdown, Snippets oder Gedanken..." class="form-textarea"></textarea>
+          <textarea id="itemContent" rows="4" placeholder="Zusätzliche Notizen, Markdown oder Gedanken..." class="form-textarea"></textarea>
         </div>
 
         <!-- Code Language selector for code snippets -->
@@ -313,7 +328,7 @@
 
           <div class="form-group">
             <label for="itemTags">Tags (mit Komma trennen)</label>
-            <input type="text" id="itemTags" placeholder="design, dev, inspiration, tools..." class="form-input">
+            <input type="text" id="itemTags" placeholder="design, dev, tools..." class="form-input">
           </div>
         </div>
 
@@ -355,12 +370,24 @@
   <div class="modal-backdrop" id="settingsModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>Datensicherung & Import</h2>
+        <h2>Einstellungen & Datenschutz</h2>
         <button class="icon-btn close-modal-btn" id="closeSettingsModalBtn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </div>
       <div class="settings-content">
+        <!-- Security / PIN Lock -->
+        <div class="settings-group">
+          <h3>🔒 PIN / Passwortschutz</h3>
+          <p class="settings-desc">Sichere deine Bookmark App mit einer PIN oder einem Passwort ab, damit nur du Zugriff hast.</p>
+          <div class="settings-btn-row">
+            <input type="password" id="setPinInput" placeholder="Neue PIN festlegen..." class="form-input" style="max-width: 220px;">
+            <button class="btn btn-secondary" id="savePinBtn">PIN speichern</button>
+            <button class="btn btn-secondary" id="removePinBtn" style="display: none; color: var(--danger);">PIN entfernen</button>
+          </div>
+          <span id="pinStatusText" style="font-size: 0.8rem; color: var(--success); margin-top: 4px; display: none;">✓ PIN-Schutz ist aktiv</span>
+        </div>
+
         <div class="settings-group">
           <h3>📦 JSON Backup & Wiederherstellung</h3>
           <p class="settings-desc">Alle gespeicherten Links, Bilder, Notizen und Tags sicher als JSON-Datei speichern.</p>
@@ -370,7 +397,7 @@
               Backup herunterladen (JSON)
             </button>
             <label class="btn btn-secondary cursor-pointer">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
               Backup einspielen (JSON)
               <input type="file" id="importJsonInput" accept=".json" style="display: none;">
             </label>
@@ -387,15 +414,9 @@
           </label>
         </div>
 
-        <div class="settings-group">
-          <h3>🚀 Beispieldaten</h3>
-          <p class="settings-desc">Lade vordefinierte Bookmark-Vorlagen und Snippets zum Ausprobieren.</p>
-          <button class="btn btn-secondary" id="loadSampleDataBtn">Beispieldaten laden</button>
-        </div>
-
         <div class="settings-group danger-zone">
           <h3 class="text-danger">⚠️ Daten zurücksetzen</h3>
-          <p class="settings-desc">Löscht alle gespeicherten Lesezeichen aus dem Browser-Speicher.</p>
+          <p class="settings-desc">Löscht alle gespeicherten Lesezeichen aus dem lokalen Browser-Speicher.</p>
           <button class="btn btn-danger" id="clearAllDataBtn">Alle Einträge löschen</button>
         </div>
       </div>

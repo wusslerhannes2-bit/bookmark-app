@@ -6,63 +6,8 @@
 (function () {
   'use strict';
 
-  // --- Initial / Default Sample Data ---
-  const DEFAULT_ITEMS = [
-    {
-      id: 'item-1',
-      type: 'link',
-      title: 'GitHub — Build and ship software on a single platform',
-      url: 'https://github.com',
-      content: 'Der weltgrößte Code-Host für Entwickler und Open-Source-Projekte.',
-      folder: 'Development',
-      tags: ['git', 'code', 'open-source'],
-      favorite: true,
-      createdAt: Date.now() - 1000 * 60 * 60 * 24 * 2
-    },
-    {
-      id: 'item-2',
-      type: 'image',
-      title: 'Minimalist Desktop Workspace Inspiration',
-      url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
-      content: 'Clean Setup mit warmem Licht und minimalistischer Tastatur.',
-      folder: 'Design & Inspo',
-      tags: ['workspace', 'minimal', 'setup'],
-      favorite: true,
-      createdAt: Date.now() - 1000 * 60 * 60 * 12
-    },
-    {
-      id: 'item-3',
-      type: 'code',
-      title: 'Modern CSS Flexbox Center Shortcut',
-      codeLang: 'html',
-      content: '.container {\n  display: grid;\n  place-items: center;\n  min-height: 100vh;\n}',
-      folder: 'Development',
-      tags: ['css', 'frontend', 'cheatsheet'],
-      favorite: false,
-      createdAt: Date.now() - 1000 * 60 * 60 * 5
-    },
-    {
-      id: 'item-4',
-      type: 'note',
-      title: 'Ideen für zukünftige Web-Projekte 💡',
-      content: '- Interaktives 3D Portfolio mit Three.js\n- RSS Feed Reader mit automatischer KI-Zusammenfassung\n- Lokale Markdown-Notizen-App mit Canvas-Board',
-      folder: 'Allgemein',
-      tags: ['ideas', 'todo', 'projects'],
-      favorite: false,
-      createdAt: Date.now() - 1000 * 60 * 60 * 2
-    },
-    {
-      id: 'item-5',
-      type: 'link',
-      title: 'Dribbble — Discover the World’s Top Designers & Creatives',
-      url: 'https://dribbble.com',
-      content: 'Inspiration für Webdesign, UI/UX, Animationen und Branding.',
-      folder: 'Design & Inspo',
-      tags: ['design', 'ui', 'inspiration'],
-      favorite: false,
-      createdAt: Date.now() - 1000 * 60 * 30
-    }
-  ];
+  // --- Start Completely Empty (No Sample/Demo Data) ---
+  const DEFAULT_ITEMS = [];
 
   // --- Storage Helper with IndexedDB & localStorage Fallback ---
   const DB_NAME = 'pindrop_db';
@@ -106,12 +51,10 @@
           if (req.result && req.result.length > 0) {
             resolve(req.result);
           } else {
-            // Check localStorage
             const local = localStorage.getItem('pindrop_bookmarks');
             if (local) {
               try {
                 const parsed = JSON.parse(local);
-                // Save to IndexedDB
                 saveAllItems(parsed);
                 resolve(parsed);
                 return;
@@ -119,13 +62,11 @@
                 console.error(e);
               }
             }
-            // Seed default items
-            saveAllItems(DEFAULT_ITEMS);
-            resolve(DEFAULT_ITEMS);
+            resolve([]);
           }
         };
         req.onerror = () => {
-          resolve(DEFAULT_ITEMS);
+          resolve([]);
         };
       });
     } else {
@@ -134,11 +75,10 @@
         try {
           return JSON.parse(local);
         } catch (e) {
-          return DEFAULT_ITEMS;
+          return [];
         }
       }
-      localStorage.setItem('pindrop_bookmarks', JSON.stringify(DEFAULT_ITEMS));
-      return DEFAULT_ITEMS;
+      return [];
     }
   }
 
@@ -149,7 +89,6 @@
       store.clear();
       items.forEach(item => store.put(item));
     }
-    // Also save in localStorage as lightweight backup (without huge base64 if possible)
     try {
       localStorage.setItem('pindrop_bookmarks', JSON.stringify(items));
     } catch (e) {
@@ -160,12 +99,12 @@
   // --- App State ---
   const state = {
     items: [],
-    currentFilter: 'all', // 'all', 'favorites', 'type-link', 'type-image', 'type-note', 'type-code', 'folder:<name>', 'tag:<name>'
+    currentFilter: 'all',
     searchQuery: '',
-    currentSort: 'newest', // 'newest', 'oldest', 'alpha', 'favorite'
-    currentView: 'grid', // 'grid', 'compact', 'masonry'
+    currentSort: 'newest',
+    currentView: 'grid',
     activeTypeInModal: 'link',
-    customFolders: ['Allgemein', 'Development', 'Design & Inspo', 'Leseliste']
+    customFolders: ['Allgemein']
   };
 
   // Load custom folders from localStorage
@@ -174,6 +113,32 @@
     try {
       state.customFolders = JSON.parse(savedFolders);
     } catch (e) {}
+  }
+
+  // --- PIN Protection Helper ---
+  async function hashPin(pin) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode('pindrop_salt_' + pin);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function checkPinProtection() {
+    const savedPinHash = localStorage.getItem('pindrop_pin_hash');
+    const lockScreen = document.getElementById('lockScreen');
+    const pinStatusText = document.getElementById('pinStatusText');
+    const removePinBtn = document.getElementById('removePinBtn');
+
+    if (savedPinHash) {
+      lockScreen.style.display = 'flex';
+      if (pinStatusText) pinStatusText.style.display = 'inline-block';
+      if (removePinBtn) removePinBtn.style.display = 'inline-block';
+    } else {
+      lockScreen.style.display = 'none';
+      if (pinStatusText) pinStatusText.style.display = 'none';
+      if (removePinBtn) removePinBtn.style.display = 'none';
+    }
   }
 
   // --- DOM Elements ---
@@ -232,9 +197,13 @@
   const exportDataBtn = document.getElementById('exportDataBtn');
   const importJsonInput = document.getElementById('importJsonInput');
   const importHtmlInput = document.getElementById('importHtmlInput');
-  const loadSampleDataBtn = document.getElementById('loadSampleDataBtn');
   const clearAllDataBtn = document.getElementById('clearAllDataBtn');
   const addFolderBtn = document.getElementById('addFolderBtn');
+  const setPinInput = document.getElementById('setPinInput');
+  const savePinBtn = document.getElementById('savePinBtn');
+  const removePinBtn = document.getElementById('removePinBtn');
+  const unlockForm = document.getElementById('unlockForm');
+  const unlockPinInput = document.getElementById('unlockPinInput');
 
   // --- Helper Functions ---
   function getFaviconUrl(url) {
@@ -389,7 +358,6 @@
   function setFilter(filter) {
     state.currentFilter = filter;
 
-    // Update active class on sidebar items
     document.querySelectorAll('.nav-item').forEach(item => {
       if (item.getAttribute('data-filter') === filter) {
         item.classList.add('active');
@@ -404,7 +372,6 @@
   function getFilteredItems() {
     let result = [...state.items];
 
-    // Filter by category / type / tag
     if (state.currentFilter === 'favorites') {
       result = result.filter(i => i.favorite);
     } else if (state.currentFilter.startsWith('type-')) {
@@ -418,7 +385,6 @@
       result = result.filter(i => i.tags && i.tags.map(t => t.toLowerCase()).includes(tag));
     }
 
-    // Search query filter
     if (state.searchQuery.trim()) {
       const q = state.searchQuery.toLowerCase().trim();
       result = result.filter(i => {
@@ -431,7 +397,6 @@
       });
     }
 
-    // Sorting
     if (state.currentSort === 'newest') {
       result.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     } else if (state.currentSort === 'oldest') {
@@ -473,7 +438,6 @@
     filterTitle.textContent = title;
     filterSubtitle.textContent = subtitle;
 
-    // Active tags filter badge
     activeFilterTags.innerHTML = '';
     if (state.currentFilter !== 'all') {
       const badge = document.createElement('div');
@@ -496,7 +460,7 @@
       if (state.searchQuery) {
         emptyTitle.textContent = `Keine Treffer für "${state.searchQuery}"`;
       } else {
-        emptyTitle.textContent = 'Keine Einträge in dieser Ansicht';
+        emptyTitle.textContent = 'Noch keine Lesezeichen vorhanden';
       }
       return;
     }
@@ -514,7 +478,6 @@
     card.className = 'bookmark-card';
     card.setAttribute('data-id', item.id);
 
-    // Image / Media section
     let mediaHtml = '';
     if (item.type === 'image' && item.url) {
       mediaHtml = `
@@ -528,7 +491,6 @@
       `;
     }
 
-    // Code Snippet section
     let codeHtml = '';
     if (item.type === 'code' && item.content) {
       codeHtml = `
@@ -539,7 +501,6 @@
       `;
     }
 
-    // Favicon & Icon logic
     let faviconHtml = '';
     if (item.type === 'link') {
       const fav = getFaviconUrl(item.url);
@@ -568,7 +529,6 @@
       `;
     }
 
-    // Tags
     let tagsHtml = '';
     if (item.tags && item.tags.length > 0) {
       tagsHtml = `
@@ -578,13 +538,11 @@
       `;
     }
 
-    // Text content for notes / links
     let contentHtml = '';
     if (item.type !== 'code' && item.content) {
       contentHtml = `<div class="card-content-text" data-action="view-detail">${escapeHtml(item.content)}</div>`;
     }
 
-    // Action buttons (Visit link / copy / edit / delete)
     let actionVisitHtml = '';
     if (item.type === 'link' && item.url) {
       actionVisitHtml = `
@@ -634,7 +592,6 @@
       </div>
     `;
 
-    // Event Delegation for Card
     card.addEventListener('click', (e) => {
       const target = e.target.closest('[data-action], [data-tag]');
       if (!target) return;
@@ -677,7 +634,6 @@
     state.activeTypeInModal = type;
     itemTypeInput.value = type;
 
-    // Update Tab UI
     document.querySelectorAll('.type-tab-btn').forEach(btn => {
       if (btn.getAttribute('data-type') === type) {
         btn.classList.add('active');
@@ -686,7 +642,6 @@
       }
     });
 
-    // Form fields visibility
     const fieldLink = document.querySelector('.field-link');
     const fieldImage = document.querySelector('.field-image');
     const fieldCode = document.querySelector('.field-code');
@@ -768,7 +723,6 @@
     settingsModal.classList.remove('open');
   }
 
-  // --- Detail Lightbox Modal ---
   function openDetailModal(item) {
     detailBadges.innerHTML = `
       <span class="card-tag">Typ: ${item.type.toUpperCase()}</span>
@@ -925,7 +879,6 @@
     e.preventDefault();
     dropOverlay.classList.remove('active');
 
-    // Check dropped files
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
       if (file.type.startsWith('image/')) {
@@ -952,7 +905,6 @@
       }
     }
 
-    // Check dropped URL / Text
     const textData = e.dataTransfer.getData('text');
     if (textData) {
       const isUrl = /^https?:\/\//i.test(textData.trim());
@@ -1004,7 +956,6 @@
     }
 
     if (id) {
-      // Edit existing
       const index = state.items.findIndex(i => i.id === id);
       if (index !== -1) {
         state.items[index] = {
@@ -1022,7 +973,6 @@
         showToast('Eintrag aktualisiert!', 'success');
       }
     } else {
-      // Create new
       const newItem = {
         id: 'item-' + Date.now(),
         type,
@@ -1044,6 +994,45 @@
     renderItems();
   });
 
+  // --- PIN / Password Security Management ---
+  savePinBtn.addEventListener('click', async () => {
+    const pin = setPinInput.value.trim();
+    if (!pin) {
+      showToast('Bitte eine PIN eingeben', 'error');
+      return;
+    }
+    const hash = await hashPin(pin);
+    localStorage.setItem('pindrop_pin_hash', hash);
+    setPinInput.value = '';
+    checkPinProtection();
+    showToast('PIN-Schutz erfolgreich aktiviert! 🔒', 'success');
+  });
+
+  removePinBtn.addEventListener('click', () => {
+    if (confirm('PIN-Schutz wirklich entfernen?')) {
+      localStorage.removeItem('pindrop_pin_hash');
+      checkPinProtection();
+      showToast('PIN-Schutz deaktiviert', 'info');
+    }
+  });
+
+  unlockForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pin = unlockPinInput.value.trim();
+    const enteredHash = await hashPin(pin);
+    const savedHash = localStorage.getItem('pindrop_pin_hash');
+
+    if (enteredHash === savedHash) {
+      document.getElementById('lockScreen').style.display = 'none';
+      unlockPinInput.value = '';
+      showToast('Erfolgreich entsperrt! 🔓', 'success');
+    } else {
+      showToast('Falsche PIN / Passwort', 'error');
+      unlockPinInput.value = '';
+      unlockPinInput.focus();
+    }
+  });
+
   // --- Backup: JSON Export & Import ---
   exportDataBtn.addEventListener('click', () => {
     const data = {
@@ -1061,7 +1050,7 @@
     a.download = `pindrop-bookmarks-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Backup erfolgreich heruntergeladen!', 'success');
+    showToast('Backup heruntergeladen!', 'success');
   });
 
   importJsonInput.addEventListener('change', (e) => {
@@ -1143,18 +1132,9 @@
       saveAllItems(state.items);
       closeModals();
       renderItems();
-      showToast(`${imported} Browser-Lesezeichen erfolgreich importiert!`, 'success');
+      showToast(`${imported} Browser-Lesezeichen importiert!`, 'success');
     };
     reader.readAsText(file);
-  });
-
-  // --- Sample Data & Clear ---
-  loadSampleDataBtn.addEventListener('click', () => {
-    state.items = [...DEFAULT_ITEMS];
-    saveAllItems(state.items);
-    closeModals();
-    renderItems();
-    showToast('Beispieldaten geladen!', 'success');
   });
 
   clearAllDataBtn.addEventListener('click', () => {
@@ -1183,7 +1163,6 @@
     }
   });
 
-  // Delete Folder (delegation)
   foldersList.addEventListener('click', (e) => {
     const delBtn = e.target.closest('.delete-folder-btn');
     if (delBtn) {
@@ -1246,7 +1225,6 @@
     });
   });
 
-  // Modals Open / Close triggers
   document.getElementById('openNewItemModalBtn').addEventListener('click', openNewItemModal);
   document.getElementById('openNewItemModalTopBtn').addEventListener('click', openNewItemModal);
   document.getElementById('emptyAddBtn').addEventListener('click', openNewItemModal);
@@ -1266,14 +1244,12 @@
     }
   });
 
-  // Backdrop click to close modals
   [itemModal, detailModal, settingsModal].forEach(modal => {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) closeModals();
     });
   });
 
-  // Sidebar toggle
   collapseSidebarBtn.addEventListener('click', () => {
     sidebar.classList.toggle('collapsed');
   });
@@ -1284,15 +1260,12 @@
 
   themeToggleBtn.addEventListener('click', toggleTheme);
 
-  // Keyboard Shortcuts
   window.addEventListener('keydown', (e) => {
-    // Ctrl+K or Cmd+K: Focus search
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
       searchInput.focus();
       searchInput.select();
     }
-    // N: New bookmark (if not focused in an input)
     if (e.key === 'n' || e.key === 'N') {
       const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
       if (activeTag !== 'input' && activeTag !== 'textarea' && !itemModal.classList.contains('open')) {
@@ -1300,7 +1273,6 @@
         openNewItemModal();
       }
     }
-    // Escape: Close modal
     if (e.key === 'Escape') {
       closeModals();
     }
@@ -1309,6 +1281,7 @@
   // --- Initialize App ---
   async function init() {
     initTheme();
+    checkPinProtection();
     await initDB();
     state.items = await loadAllItems();
     renderItems();

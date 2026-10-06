@@ -127,6 +127,67 @@ kbd {
   color: var(--text-secondary);
 }
 
+/* Lock Screen */
+.lock-screen-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-main);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.lock-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: 40px 36px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lock-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-full);
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.lock-card h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.lock-card p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.lock-input {
+  text-align: center;
+  letter-spacing: 0.2em;
+  font-size: 1.2rem;
+  font-family: var(--font-mono);
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 /* Layout */
 .app-layout {
   display: flex;
@@ -923,7 +984,8 @@ kbd {
 }
 
 .empty-icon {
-  color: var(--text-muted);
+  color: var(--accent);
+  opacity: 0.7;
   margin-bottom: 6px;
 }
 
@@ -1354,6 +1416,7 @@ kbd {
   gap: 10px;
   margin-top: 6px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .danger-zone {
