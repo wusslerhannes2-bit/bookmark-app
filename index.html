@@ -1,27 +1,27 @@
 <!DOCTYPE html>
-<html lang="de" data-theme="dark">
+<html lang="de" data-theme="dark" data-accent="indigo">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PinDrop — Clean Bookmarks</title>
-  <meta name="description" content="Einfache, moderne und private Bookmark App für Links, Bilder, Texte und Notizen.">
+  <title>PinDrop — Minimalist Bookmark & Snippet Space</title>
+  <meta name="description" content="Schnelle, private und übersichtliche Bookmark App für Links, Medien, Notizen und Code.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- PIN / Lock Screen Overlay (if PIN is configured) -->
+  <!-- PIN Lock Screen -->
   <div class="lock-screen-overlay" id="lockScreen" style="display: none;">
     <div class="lock-card">
       <div class="lock-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
       <h2>PinDrop gesperrt</h2>
-      <p id="lockScreenDesc">Gib deine PIN oder dein Passwort ein, um deine Lesezeichen zu öffnen.</p>
+      <p>Gib deine PIN ein, um auf deinen Workspace zuzugreifen.</p>
       <form id="unlockForm">
-        <input type="password" id="unlockPinInput" class="form-input lock-input" placeholder="PIN / Passwort" autofocus required>
-        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 12px;">Entsperren</button>
+        <input type="password" id="unlockPinInput" class="form-input lock-input" placeholder="••••" autofocus required maxlength="16">
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 14px;">Entsperren</button>
       </form>
     </div>
   </div>
@@ -32,40 +32,38 @@
       <div class="sidebar-header">
         <div class="brand">
           <div class="brand-logo">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
-              <circle cx="12" cy="10" r="2.5" fill="currentColor" stroke="none"/>
-            </svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/><circle cx="12" cy="10" r="2" fill="currentColor"/></svg>
           </div>
           <span class="brand-name">PinDrop</span>
         </div>
-        <button class="icon-btn sidebar-collapse-btn" id="collapseSidebarBtn" title="Sidebar umschalten">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        <button class="icon-btn sidebar-collapse-btn" id="collapseSidebarBtn" title="Seitenleiste minimieren">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
         </button>
       </div>
 
       <div class="quick-add-wrap">
         <button class="btn btn-primary btn-block" id="openNewItemModalBtn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
           <span>Neuer Eintrag</span>
           <kbd class="kbd-badge">N</kbd>
         </button>
       </div>
 
       <nav class="sidebar-nav">
+        <!-- Main views -->
         <div class="nav-section">
-          <div class="nav-section-title">Übersicht</div>
+          <div class="nav-section-title">Bibliothek</div>
           <ul class="nav-list">
             <li class="nav-item active" data-filter="all">
               <button class="nav-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
                 <span>Alle Einträge</span>
                 <span class="count-badge" id="count-all">0</span>
               </button>
             </li>
             <li class="nav-item" data-filter="favorites">
               <button class="nav-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                 <span>Favoriten</span>
                 <span class="count-badge" id="count-favorites">0</span>
               </button>
@@ -73,33 +71,34 @@
           </ul>
         </div>
 
+        <!-- Filter by Type -->
         <div class="nav-section">
-          <div class="nav-section-title">Medientyp</div>
+          <div class="nav-section-title">Typen</div>
           <ul class="nav-list">
             <li class="nav-item" data-filter="type-link">
               <button class="nav-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                <span>Web-Links</span>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span>Links</span>
                 <span class="count-badge" id="count-type-link">0</span>
               </button>
             </li>
             <li class="nav-item" data-filter="type-image">
               <button class="nav-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                <span>Bilder & Screenshots</span>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                <span>Bilder & Medien</span>
                 <span class="count-badge" id="count-type-image">0</span>
               </button>
             </li>
             <li class="nav-item" data-filter="type-note">
               <button class="nav-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
-                <span>Texte & Notizen</span>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+                <span>Notizen</span>
                 <span class="count-badge" id="count-type-note">0</span>
               </button>
             </li>
             <li class="nav-item" data-filter="type-code">
               <button class="nav-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                 <span>Code-Snippets</span>
                 <span class="count-badge" id="count-type-code">0</span>
               </button>
@@ -107,81 +106,96 @@
           </ul>
         </div>
 
+        <!-- Folders -->
         <div class="nav-section">
           <div class="nav-section-title flex-between">
-            <span>Sammlungen / Ordner</span>
-            <button class="icon-link-btn" id="addFolderBtn" title="Ordner hinzufügen">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            <span>Ordner</span>
+            <button class="icon-link-btn" id="addFolderBtn" title="Ordner erstellen">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
             </button>
           </div>
-          <ul class="nav-list" id="foldersList">
-            <!-- Dynamically populated -->
-          </ul>
+          <ul class="nav-list" id="foldersList"></ul>
         </div>
 
+        <!-- Tags -->
         <div class="nav-section">
           <div class="nav-section-title">Tags</div>
-          <div class="tags-cloud" id="tagsCloud">
-            <!-- Dynamically populated -->
-          </div>
+          <div class="tags-cloud" id="tagsCloud"></div>
+        </div>
+
+        <!-- Trash / Papierkorb -->
+        <div class="nav-section" style="margin-top: auto; padding-top: 10px;">
+          <ul class="nav-list">
+            <li class="nav-item" data-filter="trash">
+              <button class="nav-btn text-muted-hover">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                <span>Papierkorb</span>
+                <span class="count-badge" id="count-trash">0</span>
+              </button>
+            </li>
+          </ul>
         </div>
       </nav>
 
       <div class="sidebar-footer">
         <button class="nav-btn" id="openSettingsBtn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
           <span>Einstellungen</span>
         </button>
-        <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Hell/Dunkel umschalten">
-          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Hell/Dunkel Modus">
+          <svg class="sun-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          <svg class="moon-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         </button>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <main class="main-content">
-      <!-- Top Bar -->
+      <!-- Topbar -->
       <header class="topbar">
         <div class="topbar-left">
           <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" title="Menü">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
           </button>
           
           <div class="search-container">
-            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="searchInput" class="search-input" placeholder="Suchen nach Link, Titel, Text oder Tag... (Strg + K)">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Suchen nach Begriffen, Tags (#tag), Links oder Notizen...">
             <kbd class="kbd-badge" id="searchKbd">⌘K</kbd>
-            <button class="clear-search-btn" id="clearSearchBtn" title="Suche löschen" style="display: none;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
+            <button class="clear-search-btn" id="clearSearchBtn" title="Löschen" style="display: none;">✕</button>
           </div>
         </div>
 
         <div class="topbar-right">
-          <div class="view-toggles">
-            <button class="icon-btn view-btn active" data-view="grid" title="Rasteransicht">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+          <!-- Multi-Select Bulk Actions Bar (hidden by default) -->
+          <div class="bulk-actions" id="bulkActions" style="display: none;">
+            <span class="bulk-count" id="bulkCount">0 gewählt</span>
+            <button class="btn btn-secondary btn-sm" id="bulkFavBtn">Favorisieren</button>
+            <button class="btn btn-secondary btn-sm text-danger" id="bulkDeleteBtn">Löschen</button>
+            <button class="icon-btn" id="bulkCancelBtn" title="Auswahl aufheben">✕</button>
+          </div>
+
+          <div class="view-toggles" id="viewToggles">
+            <button class="icon-btn view-btn active" data-view="grid" title="Raster">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
             </button>
-            <button class="icon-btn view-btn" data-view="compact" title="Kompakte Listenansicht">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+            <button class="icon-btn view-btn" data-view="compact" title="Kompakt">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
             </button>
-            <button class="icon-btn view-btn" data-view="masonry" title="Moodboard / Pinnwand">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v9H3z"/><path d="M14 3h7v5h-7z"/><path d="M14 12h7v9h-7z"/><path d="M3 16h7v5H3z"/></svg>
+            <button class="icon-btn view-btn" data-view="masonry" title="Pinnwand">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v9H3z"/><path d="M14 3h7v5h-7z"/><path d="M14 12h7v9h-7z"/><path d="M3 16h7v5H3z"/></svg>
             </button>
           </div>
 
-          <div class="sort-dropdown-wrap">
-            <select id="sortSelect" class="select-input">
-              <option value="newest">Neueste zuerst</option>
-              <option value="oldest">Älteste zuerst</option>
-              <option value="alpha">Titel (A-Z)</option>
-              <option value="favorite">Favoriten zuerst</option>
-            </select>
-          </div>
+          <select id="sortSelect" class="select-input">
+            <option value="newest">Neueste</option>
+            <option value="oldest">Älteste</option>
+            <option value="alpha">A – Z</option>
+            <option value="favorite">Favoriten</option>
+          </select>
 
           <button class="btn btn-primary top-add-btn" id="openNewItemModalTopBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
             <span>Hinzufügen</span>
           </button>
         </div>
@@ -198,29 +212,27 @@
 
       <!-- Bookmarks Grid / Container -->
       <div class="content-container">
-        <!-- Quick Drop Zone (visible on drag) -->
+        <!-- Drop Overlay -->
         <div class="drop-overlay" id="dropOverlay">
           <div class="drop-overlay-box">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-            <h3>Dateien oder Bilder hier ablegen</h3>
-            <p>Automatisch als neue Lesezeichen speichern</p>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            <h3>Dateien oder Links hier ablegen</h3>
+            <p>Wird sofort automatisch gespeichert</p>
           </div>
         </div>
 
         <!-- Cards Container -->
-        <div class="cards-grid view-grid" id="cardsGrid">
-          <!-- Cards injected via JS -->
-        </div>
+        <div class="cards-grid view-grid" id="cardsGrid"></div>
 
         <!-- Empty State -->
         <div class="empty-state" id="emptyState">
           <div class="empty-icon">
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
           </div>
-          <h3 id="emptyTitle">Noch keine Lesezeichen vorhanden</h3>
-          <p id="emptyDesc">Klicke auf "Neuer Eintrag" oder drücke <kbd>N</kbd>, um dein erstes Lesezeichen hinzuzufügen.</p>
+          <h3 id="emptyTitle">Keine Einträge vorhanden</h3>
+          <p id="emptyDesc">Klicke auf "Neuer Eintrag" oder drücke <kbd>N</kbd>, um zu starten.</p>
           <button class="btn btn-primary" id="emptyAddBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
             Ersten Eintrag erstellen
           </button>
         </div>
@@ -233,57 +245,40 @@
     <div class="modal-card">
       <div class="modal-header">
         <h2 id="modalTitle">Neuer Eintrag</h2>
-        <button class="icon-btn close-modal-btn" id="closeItemModalBtn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
+        <button class="icon-btn close-modal-btn" id="closeItemModalBtn">✕</button>
       </div>
 
-      <!-- Item Type Selector Tabs -->
       <div class="type-selector" id="typeSelector">
-        <button type="button" class="type-tab-btn active" data-type="link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          Link
-        </button>
-        <button type="button" class="type-tab-btn" data-type="image">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-          Bild / Screenshot
-        </button>
-        <button type="button" class="type-tab-btn" data-type="note">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
-          Notiz / Text
-        </button>
-        <button type="button" class="type-tab-btn" data-type="code">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          Code
-        </button>
+        <button type="button" class="type-tab-btn active" data-type="link">Link</button>
+        <button type="button" class="type-tab-btn" data-type="image">Bild / Screenshot</button>
+        <button type="button" class="type-tab-btn" data-type="note">Notiz</button>
+        <button type="button" class="type-tab-btn" data-type="code">Code</button>
       </div>
 
       <form id="itemForm" class="modal-form">
         <input type="hidden" id="itemId">
         <input type="hidden" id="itemType" value="link">
 
-        <!-- Dynamic URL Field for Links -->
+        <!-- Link URL -->
         <div class="form-group field-link">
           <label for="itemUrl">Web-Adresse (URL)</label>
           <div class="input-with-action">
-            <input type="text" id="itemUrl" placeholder="z. B. google.com oder https://github.com" class="form-input">
-            <button type="button" class="btn btn-secondary btn-sm" id="fetchMetadataBtn" title="Titel & Icon automatisch abrufen">
-              <span>Auto-Fill</span>
-            </button>
+            <input type="text" id="itemUrl" placeholder="z. B. github.com oder https://..." class="form-input" autocomplete="off">
+            <button type="button" class="btn btn-secondary btn-sm" id="fetchMetadataBtn" title="Metadaten abrufen">Auto-Fill</button>
           </div>
         </div>
 
-        <!-- Dynamic Image Upload / URL Field for Images -->
+        <!-- Image Upload / URL -->
         <div class="form-group field-image" style="display: none;">
           <label>Bildquelle</label>
           <div class="image-source-tabs">
             <div class="drop-box" id="imageDropZone">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-              <span>Bild hierher ziehen oder <span class="text-accent">durchsuchen</span></span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <span>Bild hier ablegen oder <span class="text-accent">durchsuchen</span></span>
               <input type="file" id="imageFileInput" accept="image/*" class="file-input-hidden">
             </div>
-            <div class="or-separator">oder Bild-URL:</div>
-            <input type="text" id="imageUrlInput" placeholder="https://example.com/bild.png" class="form-input">
+            <div class="or-separator">oder direkte Bild-URL:</div>
+            <input type="text" id="imageUrlInput" placeholder="https://example.com/image.png" class="form-input">
           </div>
           <div id="imagePreviewContainer" class="image-preview-box" style="display: none;">
             <img id="imagePreview" src="" alt="Vorschau">
@@ -291,44 +286,44 @@
           </div>
         </div>
 
-        <!-- Title Field -->
+        <!-- Title -->
         <div class="form-group">
-          <label for="itemTitle">Titel (optional)</label>
-          <input type="text" id="itemTitle" placeholder="Wird bei Links automatisch ermittelt, falls leer" class="form-input">
+          <label for="itemTitle">Titel <span class="label-hint">(optional bei Links)</span></label>
+          <input type="text" id="itemTitle" placeholder="Titel oder Name..." class="form-input">
         </div>
 
-        <!-- Description / Note Body / Code Content -->
+        <!-- Content / Note / Code -->
         <div class="form-group">
           <label for="itemContent" id="contentLabel">Beschreibung / Notiz</label>
-          <textarea id="itemContent" rows="4" placeholder="Zusätzliche Notizen, Markdown oder Gedanken..." class="form-textarea"></textarea>
+          <textarea id="itemContent" rows="4" placeholder="Gedanken, Notizen oder Code hier eingeben..." class="form-textarea"></textarea>
         </div>
 
-        <!-- Code Language selector for code snippets -->
+        <!-- Code Language selector -->
         <div class="form-group field-code" style="display: none;">
-          <label for="codeLanguage">Programmiersprache / Syntax</label>
+          <label for="codeLanguage">Syntax-Hervorhebung</label>
           <select id="codeLanguage" class="form-input">
             <option value="javascript">JavaScript / TypeScript</option>
             <option value="html">HTML / CSS</option>
             <option value="python">Python</option>
-            <option value="bash">Bash / Terminal Command</option>
+            <option value="bash">Bash / Shell</option>
             <option value="json">JSON / YAML</option>
             <option value="sql">SQL</option>
-            <option value="other">Text / Markdown</option>
+            <option value="other">Reiner Text</option>
           </select>
         </div>
 
-        <!-- Folder and Tags Grid -->
+        <!-- Folder & Tags -->
         <div class="form-row-2">
           <div class="form-group">
-            <label for="itemFolder">Ordner / Sammlung</label>
+            <label for="itemFolder">Ordner</label>
             <select id="itemFolder" class="form-input">
               <option value="Allgemein">📁 Allgemein</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="itemTags">Tags (mit Komma trennen)</label>
-            <input type="text" id="itemTags" placeholder="design, dev, tools..." class="form-input">
+            <label for="itemTags">Tags (kommagetrennt)</label>
+            <input type="text" id="itemTags" placeholder="design, dev, work..." class="form-input">
           </div>
         </div>
 
@@ -348,85 +343,102 @@
     </div>
   </div>
 
-  <!-- MODAL: Lightbox / Detail View -->
+  <!-- MODAL: Detail View -->
   <div class="modal-backdrop" id="detailModal">
     <div class="modal-card detail-modal-card">
       <div class="modal-header">
         <div class="detail-header-badges" id="detailBadges"></div>
-        <button class="icon-btn close-modal-btn" id="closeDetailModalBtn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
+        <button class="icon-btn close-modal-btn" id="closeDetailModalBtn">✕</button>
       </div>
-      <div class="detail-body" id="detailBody">
-        <!-- Injected via JS -->
+      <div class="detail-body" id="detailBody"></div>
+      <div class="detail-footer" id="detailFooter"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: QR Code (Quick Mobile Share) -->
+  <div class="modal-backdrop" id="qrModal">
+    <div class="modal-card" style="max-width: 380px; text-align: center;">
+      <div class="modal-header">
+        <h2>QR-Code</h2>
+        <button class="icon-btn close-modal-btn" id="closeQrModalBtn">✕</button>
       </div>
-      <div class="detail-footer" id="detailFooter">
-        <!-- Injected via JS -->
+      <div style="padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+        <div id="qrCodeContainer" class="qr-container"></div>
+        <p id="qrUrlText" style="font-size: 0.85rem; color: var(--text-secondary); word-break: break-all;"></p>
+        <button class="btn btn-secondary btn-sm btn-block" id="copyQrUrlBtn">Link kopieren</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: Settings & Backup -->
+  <!-- MODAL: Settings -->
   <div class="modal-backdrop" id="settingsModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>Einstellungen & Datenschutz</h2>
-        <button class="icon-btn close-modal-btn" id="closeSettingsModalBtn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
+        <h2>Einstellungen</h2>
+        <button class="icon-btn close-modal-btn" id="closeSettingsModalBtn">✕</button>
       </div>
       <div class="settings-content">
-        <!-- Security / PIN Lock -->
+        <!-- Accent Color Theme Picker -->
         <div class="settings-group">
-          <h3>🔒 PIN / Passwortschutz</h3>
-          <p class="settings-desc">Sichere deine Bookmark App mit einer PIN oder einem Passwort ab, damit nur du Zugriff hast.</p>
-          <div class="settings-btn-row">
-            <input type="password" id="setPinInput" placeholder="Neue PIN festlegen..." class="form-input" style="max-width: 220px;">
-            <button class="btn btn-secondary" id="savePinBtn">PIN speichern</button>
-            <button class="btn btn-secondary" id="removePinBtn" style="display: none; color: var(--danger);">PIN entfernen</button>
+          <h3>🎨 Akzentfarbe</h3>
+          <p class="settings-desc">Wähle deinen persönlichen Farb-Akzent für das Interface.</p>
+          <div class="accent-picker" id="accentPicker">
+            <button class="accent-dot active" data-accent="indigo" style="background: #6366f1;" title="Indigo"></button>
+            <button class="accent-dot" data-accent="emerald" style="background: #10b981;" title="Emerald"></button>
+            <button class="accent-dot" data-accent="sky" style="background: #0ea5e9;" title="Sky"></button>
+            <button class="accent-dot" data-accent="rose" style="background: #f43f5e;" title="Rose"></button>
+            <button class="accent-dot" data-accent="amber" style="background: #f59e0b;" title="Amber"></button>
+            <button class="accent-dot" data-accent="violet" style="background: #8b5cf6;" title="Violet"></button>
           </div>
-          <span id="pinStatusText" style="font-size: 0.8rem; color: var(--success); margin-top: 4px; display: none;">✓ PIN-Schutz ist aktiv</span>
         </div>
 
+        <!-- PIN Protection -->
         <div class="settings-group">
-          <h3>📦 JSON Backup & Wiederherstellung</h3>
-          <p class="settings-desc">Alle gespeicherten Links, Bilder, Notizen und Tags sicher als JSON-Datei speichern.</p>
+          <h3>🔒 PIN-Schutz</h3>
+          <p class="settings-desc">Sichere deine Bookmark App mit einer Master-PIN ab.</p>
           <div class="settings-btn-row">
-            <button class="btn btn-secondary" id="exportDataBtn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-              Backup herunterladen (JSON)
-            </button>
-            <label class="btn btn-secondary cursor-pointer">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-              Backup einspielen (JSON)
+            <input type="password" id="setPinInput" placeholder="PIN festlegen..." class="form-input" style="max-width: 180px;">
+            <button class="btn btn-secondary btn-sm" id="savePinBtn">PIN aktivieren</button>
+            <button class="btn btn-secondary btn-sm text-danger" id="removePinBtn" style="display: none;">PIN entfernen</button>
+          </div>
+          <span id="pinStatusText" style="font-size: 0.8rem; color: var(--success); display: none;">✓ PIN-Schutz aktiv</span>
+        </div>
+
+        <!-- Backup & Export -->
+        <div class="settings-group">
+          <h3>📦 Datensicherung & Export</h3>
+          <p class="settings-desc">Sichere alle deine Daten als JSON-Datei oder Markdown-Export.</p>
+          <div class="settings-btn-row">
+            <button class="btn btn-secondary btn-sm" id="exportDataBtn">Exportieren (JSON)</button>
+            <button class="btn btn-secondary btn-sm" id="exportMarkdownBtn">Exportieren (Markdown)</button>
+            <label class="btn btn-secondary btn-sm cursor-pointer">
+              Importieren (JSON)
               <input type="file" id="importJsonInput" accept=".json" style="display: none;">
             </label>
           </div>
         </div>
 
+        <!-- Browser Bookmarks Import -->
         <div class="settings-group">
-          <h3>🌐 Browser-Lesezeichen importieren</h3>
-          <p class="settings-desc">Exportierte Lesezeichen (HTML) aus Google Chrome, Mozilla Firefox, Safari oder Edge importieren.</p>
-          <label class="btn btn-secondary cursor-pointer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+          <h3>🌐 Browser-Lesezeichen</h3>
+          <p class="settings-desc">Importiere Lesezeichen (HTML) aus Chrome, Firefox, Safari oder Edge.</p>
+          <label class="btn btn-secondary btn-sm cursor-pointer" style="align-self: flex-start;">
             HTML-Bookmarks importieren
             <input type="file" id="importHtmlInput" accept=".html,.htm" style="display: none;">
           </label>
         </div>
 
+        <!-- Danger Zone -->
         <div class="settings-group danger-zone">
           <h3 class="text-danger">⚠️ Daten zurücksetzen</h3>
-          <p class="settings-desc">Löscht alle gespeicherten Lesezeichen aus dem lokalen Browser-Speicher.</p>
-          <button class="btn btn-danger" id="clearAllDataBtn">Alle Einträge löschen</button>
+          <p class="settings-desc">Löscht alle gespeicherten Lesezeichen aus diesem Browser.</p>
+          <button class="btn btn-danger btn-sm" id="clearAllDataBtn" style="align-self: flex-start;">Alle Einträge löschen</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
-
-  <!-- JavaScript -->
   <script src="app.js"></script>
 </body>
 </html>
