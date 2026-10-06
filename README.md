@@ -1,62 +1,81 @@
-# PinDrop 📌 — Minimal & Clean Bookmark App
+# 📌 PinDrop — Minimal, Privacy-First Bookmark & Snippet Hub
 
-Eine extrem schlanke, moderne und übersichtliche Bookmark- und Snippet-Web-App für Links, Bilder/Screenshots, Notizen und Code-Snippets.
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Active-success.svg?style=flat-square" alt="Status">
+  <img src="https://img.shields.io/badge/Backend-Zero%20%2F%20Client--Side-blue.svg?style=flat-square" alt="Backend">
+  <img src="https://img.shields.io/badge/Storage-IndexedDB%20%2B%20Local-purple.svg?style=flat-square" alt="Storage">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License">
+</p>
 
-✨ **Kein Server / kein localhost nötig!** Du kannst einfach die `index.html` direkt im Browser per Doppelklick öffnen oder kostenlos über GitHub Pages hosten.
+<p align="center">
+  <b>Eine moderne, übersichtliche und lokale Bookmark-App für Links, Bilder, Notizen und Code-Snippets.</b><br>
+  <i>Kein Server, kein Backend, keine Registrierung — 100% lokal in deinem Browser.</i>
+</p>
 
----
-
-## 🌟 Highlights & Funktionen
-
-- 🔗 **Links & Bookmarks**: Automatische Favicon-Erkennung & Auto-Fill für Domain-Titel und Tags.
-- 🖼️ **Bilder & Screenshots**: Unterstützt Bild-URLs oder direkten Datei-Upload (Drag & Drop) mit integrierter Lightbox-Vollbildansicht.
-- 📝 **Texte & Notizen**: Formatierte Notizen und Gedanken schnell festhalten.
-- 💻 **Code-Snippets**: Integrierte Syntax-Kennzeichnung mit 1-Klick-Kopieren in die Zwischenablage.
-- 📁 **Ordner & Tags**: Flexible Organisation mit Ordnern, Sammlungen und Tag-Cloud.
-- 🔍 **Echtzeit-Suche & Tastatur-Shortcuts**:
-  - `Strg + K` (oder `Cmd + K`): Suche fokussieren
-  - `N`: Neuen Eintrag erstellen
-  - `Esc`: Dialoge schließen
-- 🎨 **Modernes UI & Themes**: Flüssige Animationen, Glassmorphism, Dark Mode und Light Mode.
-- 👁️ **3 Ansichtsmodi**:
-  - 🍱 *Grid / Raster*: Große visuelle Vorschaukarten
-  - 📑 *Kompakte Liste*: Maximale Übersicht für viele Links
-  - 📌 *Moodboard / Pinnwand*: Masonry-Layout für Bilder und Notizen
-- 💾 **Datensicherheit & Portabilität**:
-  - Gespeichert in modernem Browser `IndexedDB` mit `localStorage` Fallback.
-  - **JSON Export & Import**: Volles Backup mit einem Klick.
-  - **Browser-Bookmarks Import**: Importiere Lesezeichen aus Google Chrome, Mozilla Firefox, Safari und Microsoft Edge.
+<p align="center">
+  🌐 <b><a href="https://wusslerhannes2-bit.github.io/bookmark-app/">Live Demo ansehen</a></b>
+</p>
 
 ---
 
-## 🚀 Wie öffne ich die App?
+## ✨ Features
 
-### Methode 1: Direkt im Browser öffnen (Lokal ohne Installation)
-1. Öffne den Ordner `/home/hannes/Projekte/Bookmark app/`
-2. Mache einen Doppelklick auf die Datei [`index.html`](file:///home/hannes/Projekte/Bookmark%20app/index.html) oder ziehe sie in deinen Browser.
-3. Fertig!
-
----
-
-## 🐙 Auf GitHub hochladen & GitHub Pages aktivieren
-
-Um das Projekt auf GitHub zu pushen und optional kostenlos im Web bereitzustellen:
-
-1. **Erstelle ein neues leeres Repository auf [GitHub.com](https://github.com/new)** (z. B. mit dem Namen `bookmark-app`).
-2. Führe im Terminal folgende Befehle aus:
-
-```bash
-cd "/home/hannes/Projekte/Bookmark app"
-git remote add origin https://github.com/<DEIN-NUTZERNAME>/bookmark-app.git
-git branch -M main
-git push -u origin main
-```
-
-3. **Optional (Online hosten mit GitHub Pages):**
-   - Gehe in deinem GitHub-Repository auf **Settings** -> **Pages**.
-   - Wähle unter *Branch* den `main` Branch und klicke auf **Save**.
-   - Deine Bookmark-App ist nun unter `https://<DEIN-NUTZERNAME>.github.io/bookmark-app/` weltweit erreichbar!
+- 🔒 **100% Privacy & Local-First**: Alle Daten verbleiben ausschließlich in deinem Browser (`IndexedDB` & `localStorage`). Kein Tracking, keine externen Server.
+- 🔑 **PIN / Passwort-Schutz**: Schütze deine gespeicherten Lesezeichen mit einer Master-PIN vor neugierigen Blicken.
+- 🔗 **Smarte Links**: Automatischer Favicon-Grabber, Domain-Erkennung und Auto-Fill-Funktion für Titel und Tags.
+- 🖼️ **Bilder & Screenshots**: Unterstützt Bild-URLs sowie **Drag-and-Drop / Datei-Upload** mit integrierter Lightbox-Vollbildansicht.
+- 📝 **Notizen & Markdown**: Schnelle Textnotizen und formatierte Gedanken mit Sofort-Kopierfunktion.
+- 💻 **Code-Snippets**: Syntax-Tagging mit 1-Klick-Kopieren in die Zwischenablage.
+- 📁 **Kollektionen & Tags**: Organisiere Inhalte nach benutzerdefinierten Ordnern und flexiblen Tags.
+- 🍱 **3 Ansichtsmodi**:
+  - **Grid**: Visuelle Kacheln mit Media-Vorschau
+  - **Kompakt**: Tabellarische Schnellansicht für hohe Informationsdichte
+  - **Masonry (Moodboard)**: Dynamische Pinnwand für Design & Inspiration
+- 🌓 **Dark & Light Mode**: Automatisch angepasstes, augenschonendes UI-Design mit Glassmorphism-Effekten.
+- 📦 **Export & Import**:
+  - Vollständiges JSON-Backup (Download & Restore mit einem Klick)
+  - HTML-Bookmark-Import (unterstützt Google Chrome, Firefox, Safari und Edge)
 
 ---
 
-Entwickelt mit modernem Vanilla HTML5, CSS3 und JavaScript.
+## ⌨️ Tastatur-Shortcuts
+
+| Shortcut | Aktion |
+| :--- | :--- |
+| <kbd>Strg</kbd> + <kbd>K</kbd> / <kbd>⌘</kbd> + <kbd>K</kbd> | Sofortsuche fokussieren |
+| <kbd>N</kbd> | Neuen Eintrag erstellen |
+| <kbd>Esc</kbd> | Modals und Dialoge schließen |
+
+---
+
+## 🚀 Schnellstart
+
+### 1. Direkt im Browser nutzen
+Du benötigst weder Node.js noch einen Webserver.
+
+1. Repository klonen oder als ZIP herunterladen:
+   ```bash
+   git clone https://github.com/wusslerhannes2-bit/bookmark-app.git
+   ```
+2. Die Datei [`index.html`](index.html) per Doppelklick in deinem Lieblingsbrowser öffnen.
+
+### 2. Eigenes GitHub Pages Deployment
+1. Forke dieses Repository.
+2. Gehe in deinem GitHub-Repository auf **Settings** → **Pages**.
+3. Wähle als Source `Deploy from a branch` und wähle den Branch `main` mit `/ (root)`.
+4. Klicke auf **Save**. Deine Bookmark-App ist in unter einer Minute live!
+
+---
+
+## 🛠️ Technologien
+
+- **HTML5** — Semantische Struktur und barrierefreie Modals
+- **CSS3** — Custom CSS Variables, Glassmorphism, CSS Grid & Flexbox, responsive Breakpoints
+- **Vanilla JavaScript** — Kein Framework-Overhead, performante DOM-Manipulation
+- **IndexedDB API** — Zuverlässige Offline-Speicherung auch für hochauflösende Bilder
+
+---
+
+## 📄 Lizenz
+
+Dieses Projekt ist unter der [MIT-Lizenz](LICENSE) lizenziert — frei zur privaten und kommerziellen Nutzung.
